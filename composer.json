@@ -1,0 +1,26 @@
+{
+    "name": "webconsol/php-utilities",
+    "version": "1.0.0",
+    "description": "WEBCONSOL PHP Utility Classes",
+    "type": "library",
+    "keywords": ["data models"],
+    "homepage": "https://github.com/WEBCONSOL/php-utilities",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sothea Nim",
+            "email": "sothea.nim@webconsol.com",
+            "homepage": "https://www.webconsol.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "mrclay/jsmin-php": "^2.3",
+        "natxet/CssMin": "^3.0"
+    },
+    "autoload": {
+        "psr-0" : {
+            "WC\\Utilities\\" : "src/"
+        }
+    }
+}
