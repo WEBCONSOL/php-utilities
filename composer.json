@@ -3,7 +3,7 @@
     "version": "1.0.1",
     "description": "WEBCONSOL PHP Utility Classes",
     "type": "library",
-    "keywords": ["data models"],
+    "keywords": ["utilities"],
     "homepage": "https://github.com/WEBCONSOL/php-utilities",
     "license": "MIT",
     "authors": [
