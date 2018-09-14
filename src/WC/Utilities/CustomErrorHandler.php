@@ -5,8 +5,8 @@ namespace WC\Utilities;
 class CustomErrorHandler
 {
     public static function init() {
-        set_exception_handler("\Utilities\CustomErrorHandler::exceptionHandler");
-        set_error_handler("\Utilities\CustomErrorHandler::errorHandler");
+        set_exception_handler("\WC\Utilities\CustomErrorHandler::exceptionHandler");
+        set_error_handler("\WC\Utilities\CustomErrorHandler::errorHandler");
     }
 
     public final static function errorHandler($errCode, $errStr, $errFile, $errLine, $errContext)
