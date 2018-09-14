@@ -1,6 +1,6 @@
 <?php
 
-namespace Sass;
+namespace WC\Utilities\Sass;
 
 /**
  * SCSS nested formatter

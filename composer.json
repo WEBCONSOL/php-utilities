@@ -1,6 +1,6 @@
 {
     "name": "webconsol/php-utilities",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "WEBCONSOL PHP Utility Classes",
     "type": "library",
     "keywords": ["data models"],

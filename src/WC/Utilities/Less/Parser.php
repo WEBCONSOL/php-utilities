@@ -1,6 +1,6 @@
 <?php
 
-namespace Less;
+namespace WC\Utilities\Less;
 
 // responsible for taking a string of LESS code and converting it into a
 // syntax tree

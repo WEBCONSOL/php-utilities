@@ -1,6 +1,6 @@
 <?php
 
-namespace Less;
+namespace WC\Utilities\Less;
 
 class FormatterLessJS extends FormatterClassic {
     public $disableSingle = true;

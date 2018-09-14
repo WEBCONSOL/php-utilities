@@ -1,6 +1,6 @@
 <?php
 
-namespace Less;
+namespace WC\Utilities\Less;
 
 class FormatterClassic {
     public $indentChar = "  ";

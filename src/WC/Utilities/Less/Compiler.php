@@ -1,6 +1,6 @@
 <?php
 
-namespace Less;
+namespace WC\Utilities\Less;
 
 /**
  * The LESS compiler and parser.

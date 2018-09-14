@@ -165,11 +165,11 @@ class ClientlibManager
             }
             try {
                 if (sizeof($lessBuffer)) {
-                    $less = new \Less\Compiler();
+                    $less = new \WC\Utilities\Less\Compiler();
                     $htmlBuffer[] = $less->compile(implode('', $lessBuffer));
                 }
                 if (sizeof($sassBuffer)) {
-                    $sass = new \Sass\Compiler();
+                    $sass = new \WC\Utilities\Sass\Compiler();
                     $htmlBuffer[] = $sass->compile(implode('', $sassBuffer));
                 }
 
