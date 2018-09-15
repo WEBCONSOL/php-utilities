@@ -2033,11 +2033,11 @@ class Compiler {
     }
 
     protected function newFormatter() {
-        $className = "Less\\FormatterLessJS";
+        $className = "\WC\Utilities\Less\FormatterLessJS";
         if (!empty($this->formatterName)) {
             if (!is_string($this->formatterName))
                 return $this->formatterName;
-            $className = "Less\\Formatter".ucwords($this->formatterName);
+            $className = "\WC\Utilities\Less\Formatter".ucwords($this->formatterName);
         }
 
         return new $className;

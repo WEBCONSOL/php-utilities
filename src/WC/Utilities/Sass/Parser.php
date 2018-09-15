@@ -60,7 +60,7 @@ class Parser {
     }
 
     static protected function makeOperatorStr($operators) {
-        return '('.implode('|', array_map(array('Sass\\Parser','preg_quote'),
+        return '('.implode('|', array_map(array('\WC\Utilities\Sass\Parser','preg_quote'),
                 $operators)).')';
     }
 

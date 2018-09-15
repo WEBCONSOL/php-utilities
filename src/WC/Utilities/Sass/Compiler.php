@@ -96,7 +96,7 @@ class Compiler {
 
 	protected $numberPrecision = 5;
 
-	protected $formatter = "Sass\\FormatterNested";
+	protected $formatter = "\WC\Utilities\Sass\FormatterNested";
 
 	/**
 	 * Compile scss
