@@ -63,7 +63,7 @@ class Parser {
 
         if (!self::$operatorString) {
             self::$operatorString =
-                '('.implode('|', array_map(array('Less\Compiler', 'preg_quote'),
+                '('.implode('|', array_map(array('\WC\Utilities\Less\Compiler', 'preg_quote'),
                     array_keys(self::$precedence))).')';
 
             $commentSingle = Compiler::preg_quote(self::$commentSingle);
