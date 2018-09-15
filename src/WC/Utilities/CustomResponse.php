@@ -49,4 +49,15 @@ class CustomResponse
         }
         return $output;
     }
+
+    public static function renderJSONString(string $data) {
+        header("Content-Type: application/json; charset=utf-8");
+        //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
+        die($data);
+    }
+
+    public static function renderPlaintext(string $data) {
+        header("Content-Type: text/html; charset=utf-8");
+        die($data);
+    }
 }
