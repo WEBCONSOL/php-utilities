@@ -71,7 +71,7 @@ class Request
             if (sizeof(self::$data['postData']) === 0) {
                 $requestBody = file_get_contents("php://input");
                 if ($requestBody) {
-                    if (Util::isValidJSON($requestBody)) {
+                    if (EncodingUtil::isValidJSON($requestBody)) {
                         self::$data['postData'] = json_decode($requestBody, true);
                     }
                     else {

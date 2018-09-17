@@ -4,6 +4,8 @@ namespace WC\Utilities;
 
 class DebugUtil
 {
+    public static $data = array();
+
     public static function print() {
         $a = func_get_args();
         if (is_array($a) && sizeof($a)) {
