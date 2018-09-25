@@ -1456,7 +1456,7 @@ class Compiler {
                     $key = $this->vPrefix . $this->compileValue($this->lib_e($key));
                 }
 
-                $seen = $this->env->seenNames;
+                $seen = isset($this->env->seenNames) ? $this->env->seenNames : array();
 
                 if (!empty($seen[$key])) {
                     $this->throwError("infinite loop detected: $key");
