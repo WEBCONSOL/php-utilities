@@ -16,7 +16,8 @@
     "require": {
         "php": ">=7.0",
         "mrclay/jsmin-php": "^2.3",
-        "natxet/CssMin": "^3.0"
+        "natxet/CssMin": "^3.0",
+        "ext-json": "^1.6"
     },
     "autoload": {
         "psr-0" : {
