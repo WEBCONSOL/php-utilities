@@ -14,12 +14,16 @@ class ClientlibManager
     private $isStyle = false;
     private $isScript = false;
     private $isJSON = false;
+    private $lessVars = array();
+    private $sassVars = array();
 
-    public function __construct(string $root, string $q, bool $isMinify=false)
+    public function __construct(string $root, string $q, array $vars=array(), bool $isMinify=false)
     {
         if (!defined('DS')) {
             define('DS', DIRECTORY_SEPARATOR);
         }
+        $this->lessVars = isset($vars['less']) && is_array($vars['less']) ? $vars['less'] : array();
+        $this->sassVars = isset($vars['sass']) && is_array($vars['sass']) ? $vars['sass'] : array();
         $this->root = $root;
         $this->pathInfo = new PathInfo($q);
         $this->isMinify = $isMinify ? $isMinify : $this->pathInfo->isMinify();
@@ -165,12 +169,28 @@ class ClientlibManager
             }
             try {
                 if (sizeof($lessBuffer)) {
+                    $vars = array();
+                    if (sizeof($this->lessVars)) {
+                        foreach ($this->lessVars as $lessVar) {
+                            if (file_exists($lessVar)) {
+                                $vars[] = file_get_contents($lessVar);
+                            }
+                        }
+                    }
                     $less = new \WC\Utilities\Less\Compiler();
-                    $htmlBuffer[] = $less->compile(implode('', $lessBuffer));
+                    $htmlBuffer[] = $less->compile(implode('', $vars).implode('', $lessBuffer));
                 }
                 if (sizeof($sassBuffer)) {
+                    if (sizeof($this->sassVars)) {
+                        $vars = array();
+                        foreach ($this->sassVars as $sassVar) {
+                            if (file_exists($sassVar)) {
+                                $vars[] = file_get_contents($sassVar);
+                            }
+                        }
+                    }
                     $sass = new \WC\Utilities\Sass\Compiler();
-                    $htmlBuffer[] = $sass->compile(implode('', $sassBuffer));
+                    $htmlBuffer[] = $sass->compile(implode('', $vars).implode('', $sassBuffer));
                 }
 
                 if ($this->isMinify) {
