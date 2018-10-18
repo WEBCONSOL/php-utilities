@@ -6,6 +6,8 @@ use WC\Models\ListModel;
 
 class PathInfo
 {
+    private $http = 'http://';
+    private $https = 'https://';
     private $uri;
     private $selectors=array();
     private $parts=array();
@@ -27,19 +29,19 @@ class PathInfo
     {
         if (!$q) {
             $q = $_SERVER['REQUEST_URI'];
-            $this->schema = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https://' : 'http://';
+            $this->schema = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? $this->https : $this->http;
             $this->host = $_SERVER['HTTP_HOST'];
             $this->port = $_SERVER['SERVER_PORT'];
         }
         else {
-            if (StringUtil::startsWith($q, 'https://') || StringUtil::startsWith($q, 'http://')) {
-                if (StringUtil::startsWith($q, 'https://')) {
-                    $this->schema = 'https://';
+            if (StringUtil::startsWith($q, $this->https) || StringUtil::startsWith($q, $this->http)) {
+                if (StringUtil::startsWith($q, $this->https)) {
+                    $this->schema = $this->https;
                 }
                 else {
-                    $this->schema = 'http://';
+                    $this->schema = $this->http;
                 }
-                $str = str_replace(array('http://', 'https://'), '', $q);
+                $str = str_replace(array($this->http, $this->https), '', $q);
                 $parts = explode('/', $str);
                 if (StringUtil::contains($parts[0], ':')) {
                     $parts = explode(':', $parts[0]);
@@ -62,7 +64,7 @@ class PathInfo
         }
         $this->parts = new ListModel(explode('/', $this->uri));
         $this->ext = pathinfo($this->uri, PATHINFO_EXTENSION);
-        if (!$this->ext || strlen($this->ext) > 4) {
+        if (!$this->ext || strlen($this->ext) > 7) {
             $this->ext = 'html';
         }
         // set selectors
@@ -105,7 +107,7 @@ class PathInfo
     public function getSchema(): string {return $this->schema;}
     public function getHost(): string {return $this->host;}
     public function getFullUrl(): string {return $this->schema.$this->host.'/'.$this->uri.($this->queryString?'?'.$this->queryString:'');}
-    public function isHttps(): bool {return $this->schema === 'https://';}
+    public function isHttps(): bool {return $this->schema === $this->https;}
 
     public function setMinify(bool $flag) {$this->minify=$flag;}
 }
