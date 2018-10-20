@@ -14,12 +14,16 @@ class ClientlibManager
     private $isStyle = false;
     private $isScript = false;
     private $isJSON = false;
+    private $lessVars = array();
+    private $sassVars = array();
 
-    public function __construct(string $root, string $q, bool $isMinify=false)
+    public function __construct(string $root, string $q, array $vars=array(), bool $isMinify=false)
     {
         if (!defined('DS')) {
             define('DS', DIRECTORY_SEPARATOR);
         }
+        $this->lessVars = isset($vars['less']) && is_array($vars['less']) ? $vars['less'] : array();
+        $this->sassVars = isset($vars['sass']) && is_array($vars['sass']) ? $vars['sass'] : array();
         $this->root = $root;
         $this->pathInfo = new PathInfo($q);
         $this->isMinify = $isMinify ? $isMinify : $this->pathInfo->isMinify();
@@ -152,12 +156,35 @@ class ClientlibManager
             $htmlBuffer = array();
             $lessBuffer = array();
             $sassBuffer = array();
+            $pattern = '/@import "(.[^"]*)";/';
             foreach ($this->files as $file) {
                 if (pathinfo($file, PATHINFO_EXTENSION) === FileExtension::SASS) {
-                    $sassBuffer[] = file_get_contents($file);
+                    $bfr = file_get_contents($file);
+                    $matches = PregUtil::getMatches($pattern, $bfr);
+                    if (sizeof($matches)) {
+                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
+                        if (file_exists($varFile)) {
+                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
+                        }
+                        else {
+                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        }
+                    }
+                    $sassBuffer[] = $bfr;
                 }
                 else if (pathinfo($file, PATHINFO_EXTENSION) === FileExtension::LESS) {
-                    $lessBuffer[] = file_get_contents($file);
+                    $bfr = file_get_contents($file);
+                    $matches = PregUtil::getMatches($pattern, $bfr);
+                    if (sizeof($matches)) {
+                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
+                        if (file_exists($varFile)) {
+                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
+                        }
+                        else {
+                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        }
+                    }
+                    $lessBuffer[] = $bfr;
                 }
                 else {
                     $htmlBuffer[] = file_get_contents($file);
@@ -165,12 +192,28 @@ class ClientlibManager
             }
             try {
                 if (sizeof($lessBuffer)) {
+                    $vars = array();
+                    if (sizeof($this->lessVars)) {
+                        foreach ($this->lessVars as $lessVar) {
+                            if (file_exists($lessVar)) {
+                                $vars[] = file_get_contents($lessVar);
+                            }
+                        }
+                    }
                     $less = new \WC\Utilities\Less\Compiler();
-                    $htmlBuffer[] = $less->compile(implode('', $lessBuffer));
+                    $htmlBuffer[] = $less->compile(implode('', $vars).implode('', $lessBuffer));
                 }
                 if (sizeof($sassBuffer)) {
+                    if (sizeof($this->sassVars)) {
+                        $vars = array();
+                        foreach ($this->sassVars as $sassVar) {
+                            if (file_exists($sassVar)) {
+                                $vars[] = file_get_contents($sassVar);
+                            }
+                        }
+                    }
                     $sass = new \WC\Utilities\Sass\Compiler();
-                    $htmlBuffer[] = $sass->compile(implode('', $sassBuffer));
+                    $htmlBuffer[] = $sass->compile(implode('', $vars).implode('', $sassBuffer));
                 }
 
                 if ($this->isMinify) {
