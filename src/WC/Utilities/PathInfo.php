@@ -29,7 +29,13 @@ class PathInfo
     {
         if (!$q) {
             $q = $_SERVER['REQUEST_URI'];
-            $this->schema = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? $this->https : $this->http;
+            if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) ||
+                (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')) {
+                $this->schema = $this->https;
+            }
+            else{
+                $this->schema = $this->http;
+            }
             $this->host = $_SERVER['HTTP_HOST'];
             $this->port = $_SERVER['SERVER_PORT'];
         }
