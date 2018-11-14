@@ -156,12 +156,35 @@ class ClientlibManager
             $htmlBuffer = array();
             $lessBuffer = array();
             $sassBuffer = array();
+            $pattern = '/@import "(.[^"]*)";/';
             foreach ($this->files as $file) {
                 if (pathinfo($file, PATHINFO_EXTENSION) === FileExtension::SASS) {
-                    $sassBuffer[] = file_get_contents($file);
+                    $bfr = file_get_contents($file);
+                    $matches = PregUtil::getMatches($pattern, $bfr);
+                    if (sizeof($matches)) {
+                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
+                        if (file_exists($varFile)) {
+                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
+                        }
+                        else {
+                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        }
+                    }
+                    $sassBuffer[] = $bfr;
                 }
                 else if (pathinfo($file, PATHINFO_EXTENSION) === FileExtension::LESS) {
-                    $lessBuffer[] = file_get_contents($file);
+                    $bfr = file_get_contents($file);
+                    $matches = PregUtil::getMatches($pattern, $bfr);
+                    if (sizeof($matches)) {
+                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
+                        if (file_exists($varFile)) {
+                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
+                        }
+                        else {
+                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        }
+                    }
+                    $lessBuffer[] = $bfr;
                 }
                 else {
                     $htmlBuffer[] = file_get_contents($file);
