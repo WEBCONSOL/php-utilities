@@ -56,7 +56,7 @@ class Request
         // header data
         self::$data['header'] = getallheaders();
         $obj = $this->getHeaderParam('Access-Control-Request-Headers');
-        if (sizeof($obj)) {
+        if (!empty($obj)) {
             self::$data['headerParamKeys'] = is_array($obj) || is_object($obj) ? json_encode($obj) : $obj;
         }
         else {
