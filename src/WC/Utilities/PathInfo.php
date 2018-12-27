@@ -24,6 +24,8 @@ class PathInfo
     private $schema = '';
     private $host = '';
     private $port = '80';
+    private $pathSfx = '';
+    private $allowedExtensions = array('php', 'html', 'htm');
 
     public function __construct(string $q='')
     {
@@ -94,6 +96,26 @@ class PathInfo
         $this->fileFullName = $this->path.($this->selectorString?'.':'').$this->selectorString.($this->ext?'.':'').$this->ext;
 
         $this->setMinify(in_array('min', $this->selectors->getAsArray()));
+        $this->setPathSuffix();
+    }
+
+    private function setPathSuffix() {
+        $del = '';
+        $parts = explode('/', $this->uri);
+        foreach ($parts as $part) {
+            $exp = explode('.', $part);
+            if (in_array($exp[sizeof($exp)-1], $this->allowedExtensions)) {
+                $del = $part;
+                break;
+            }
+        }
+        if ($del) {
+            $parts = explode($del.'/', $this->uri);
+            if (sizeof($parts) === 2) {
+                $this->path = $parts[0].$del;
+                $this->pathSfx = $parts[1];
+            }
+        }
     }
 
     public function getUri(): string {return $this->uri;}
@@ -114,6 +136,7 @@ class PathInfo
     public function getHost(): string {return $this->host;}
     public function getFullUrl(): string {return $this->schema.$this->host.'/'.$this->uri.($this->queryString?'?'.$this->queryString:'');}
     public function isHttps(): bool {return $this->schema === $this->https;}
+    public function getPathSuffix(): string {return $this->pathSfx;}
 
     public function setMinify(bool $flag) {$this->minify=$flag;}
 }

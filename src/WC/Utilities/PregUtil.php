@@ -6,7 +6,7 @@ final class PregUtil
 {
     private function __construct(){}
 
-    public static function getMatches(string $pattern, $subject): array {
+    public static function getMatches(string $pattern, string $subject): array {
         $matches = array();
         preg_match_all($pattern, $subject, $matches);
         if (self::matchesFound($matches)) {
