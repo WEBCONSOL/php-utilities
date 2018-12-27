@@ -2,8 +2,6 @@
 
 namespace WC\Utilities;
 
-use WC\Models\ListModel;
-
 class ArrayUtil
 {
     const NOT_VALID_NAME_CHARS = '!"#%&\'()*+,./;<=>@[\\]^`{|}~';
