@@ -17,7 +17,7 @@ class CustomResponse
     }
 
     public static function getOutputFormattedAsArray(array $data=null, int $code=200, $msg=null, bool $status=true): array {
-        $file = __DIR__ . '/json/' . $code . '.json';
+        $file = __DIR__ . '/data/' . $code . '.json';
         if (file_exists($file)) {
             $output = json_decode(file_get_contents($file), true);
         }
