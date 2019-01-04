@@ -11,36 +11,27 @@ class CustomResponse
     public static function getDebug(): bool {return self::$debug;}
 
     public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
         die(self::getErrorOutput($code, $msg, $status, $data));
     }
 
     public static function getErrorOutput(int $code, $msg=null, bool $status=true, array $data=array()): string {
-        return json_encode(self::getErrorOutputAsArray($code, $msg, $status, $data));
+        return json_encode(self::getOutputFormattedAsArray($data, $code, $msg, $status));
     }
 
-    public static function getErrorOutputAsArray(int $code, $msg=null, bool $status=true, array $data=array()): array {
-        $output = array();
-        $output['status'] = $code === 200;
-        $output['code'] = $code;
-        if ($msg) {
-            $output['message'] = $msg;
-        }
-        else if ($code === 200) {
-            $output['message'] = 'Success';
-        }
-        else if ($code === 400) {
-            $output['message'] = 'Bad request';
-        }
-        else if ($code === 403) {
-            $output['message'] = 'Forbidden to access this resource.';
-        }
-        else if ($code === 404) {
-            $output['message'] = 'Resource Not Found. We cannot find the resource you requested.';
+    public static function getOutputFormattedAsArray(array $data=null, int $code=200, $msg=null, bool $status=true): array {
+        $file = __DIR__ . '/json/' . $code . '.json';
+        if (file_exists($file)) {
+            $output = json_decode(file_get_contents($file), true);
         }
         else {
-            $output['message'] = 'Internal error.';
+            $output = json_decode(file_get_contents(__DIR__ . '/json/500.json'), true);
+        }
+        $output['status'] = $code === 200;
+        $output['statusCode'] = $code;
+        if ($msg) {
+            $output['message'] = $msg;
         }
 
         $output['data'] = sizeof($data) ? $data : null;
@@ -50,14 +41,18 @@ class CustomResponse
         return $output;
     }
 
+    public static function getOutputFormattedAsString(array $data=null, int $code=200, $msg=null): string{
+        return json_encode(self::getOutputFormattedAsArray($data, $code, $msg));
+    }
+
     public static function renderJSONString(string $data) {
-        header("Content-Type: application/json; charset=utf-8");
+        header('Content-Type: application/json; charset=utf-8');
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
         die($data);
     }
 
     public static function renderPlaintext(string $data) {
-        header("Content-Type: text/html; charset=utf-8");
+        header('Content-Type: text/html; charset=utf-8');
         die($data);
     }
 }
