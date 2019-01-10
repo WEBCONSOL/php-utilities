@@ -70,13 +70,9 @@ class PathUtil
                 if ($str === $parts2[$key]) {
                     $found++;
                 }
-                else if (strlen($str) >= 2 && $str[0]==='{' && $str[strlen($str)-1]==='}') {
+                else if ((strlen($str) >= 2 && $str[0]==='{' && $str[strlen($str)-1]==='}') || (strlen($str) >= 2 && $str[0]===':')) {
                     $found++;
-                    $args[substr($str, 1, strlen($str)-1)] = $parts2[$key];
-                }
-                else if (strlen($str) >= 2 && $str[0]===':') {
-                    $found++;
-                    $args[substr($str,1, strlen($str))] = $parts2[$key];
+                    $args[str_replace(array('{','}', ':'), '', $str)] = $parts2[$key];
                 }
             }
         }
