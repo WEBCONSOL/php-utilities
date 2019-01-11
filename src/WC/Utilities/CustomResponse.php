@@ -22,7 +22,7 @@ class CustomResponse
             $output = json_decode(file_get_contents($file), true);
         }
         else {
-            $output = json_decode(file_get_contents(__DIR__ . '/json/500.json'), true);
+            $output = json_decode(file_get_contents(__DIR__ . '/data/500.json'), true);
         }
         $output['status'] = $code === 200;
         $output['statusCode'] = $code;
