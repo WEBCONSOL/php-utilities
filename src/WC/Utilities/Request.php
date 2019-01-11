@@ -137,6 +137,8 @@ class Request
 
     public function setRequestParam($param, $value) { self::$data['params'][$param] = $value; }
 
+    public function removeRequestParam($param) { if ($this->hasRequestParam($param)) {unset(self::$data['params'][$param]);} }
+
     public function hasRequestParam($key): bool { return isset(self::$data['params'])&&isset(self::$data['params'][$key]); }
 
     public function getRequestParam($param, $default = null) {if ($this->hasRequestParam($param)) {$val = self::$data['params'][$param];return is_string($val) && strlen($val) ? rawurldecode($val) : $val;}return $default;}
