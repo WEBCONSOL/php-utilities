@@ -9,11 +9,7 @@ class DateTimeFormat
 
     private function __construct() { }
 
-    public static function setup() {
-        if (!self::$timezone) {
-            self::$timezone = new \DateTimeZone(self::$utc);
-        }
-    }
+    public static function setup() {if (!self::$timezone) {self::$timezone = new \DateTimeZone(self::$utc);}}
 
     public static function getFormatISO8601($datetime='now') {
         self::setup();
@@ -36,8 +32,7 @@ class DateTimeFormat
         return $date->toUnix();
     }
 
-    public static function getSqlFormat()
-    {
-        return Date::$format;
-    }
+    public static function getSqlFormat() {return Date::$format;}
+
+    public static function getStandardFormatString() {return "Y-m-d\TH:i:sP";}
 }
