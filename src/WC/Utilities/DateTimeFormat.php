@@ -34,5 +34,5 @@ class DateTimeFormat
 
     public static function getSqlFormat() {return Date::$format;}
 
-    public static function getStandardFormatString() {return "Y-m-d\TH:i:sP";}
+    public static function getStandardFormatString() {return "Y-m-d\TH:i:s";}
 }
