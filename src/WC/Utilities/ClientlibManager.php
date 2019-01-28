@@ -16,9 +16,13 @@ class ClientlibManager
     private $isJSON = false;
     private $lessVars = array();
     private $sassVars = array();
+    private $assetDir = '';
 
     public function __construct(string $root, string $q, array $vars=array(), bool $isMinify=false)
     {
+        $parts = explode('/', $root);
+        $this->assetDir = '/'.$parts[sizeof($parts)-1] . '/' . pathinfo($q, PATHINFO_FILENAME);
+
         if (!defined('DS')) {
             define('DS', DIRECTORY_SEPARATOR);
         }
@@ -68,7 +72,7 @@ class ClientlibManager
     public function renderContent()
     {
         $this->setRenderHeaderContentType();
-        echo $this->content;
+        echo str_replace(['../fonts'], [$this->assetDir.'/fonts'], $this->content);
     }
 
     private function loadStatic()
