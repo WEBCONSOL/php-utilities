@@ -19,6 +19,7 @@ class Request
             self::$data['headerParamKeys'] = array();
             self::$data['params'] = array();
             self::$data['postData'] = array();
+            self::$data['deleteData'] = array();
             self::$data['isHttps'] = (int)$_SERVER['SERVER_PORT']===443||(isset($_SERVER['HTTP_X_FORWARDED_PROTO'])&&$_SERVER['HTTP_X_FORWARDED_PROTO']==="https")||isset($_SERVER['HTTP_X_FORWARDED_SSL'])||isset($_SERVER['HTTPS'])?true:false;
             self::$data['host'] = $_SERVER["HTTP_HOST"];
             self::$data['method'] = strtoupper($_SERVER["REQUEST_METHOD"]);
@@ -87,11 +88,25 @@ class Request
                 }
             }
         }
+        else if ($this->method() === "DELETE") {
+
+            if (sizeof(self::$data['deleteData']) === 0) {
+                $requestBody = file_get_contents("php://input");
+                if ($requestBody) {
+                    if (EncodingUtil::isValidJSON($requestBody)) {
+                        self::$data['deleteData'] = json_decode($requestBody, true);
+                    }
+                    else {
+                        parse_str($requestBody, self::$data['deleteData']);
+                    }
+                }
+            }
+        }
 
         if (is_array($_GET)) {
             self::$data['params'] = array_merge(self::$data['params'], $_GET);
         }
-        self::$data['params'] = array_merge(self::$data['params'], self::$data['postData']);
+        self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
     }
 
     public function isAllowedContentType(): bool {return in_array($this->getHeaderParam('Content-Type'), $this->allowedContentType);}
@@ -121,6 +136,8 @@ class Request
     public function getHeaderParamsAsArray():array {return self::$data['header'];}
 
     public function setRequestParam($param, $value) { self::$data['params'][$param] = $value; }
+
+    public function removeRequestParam($param) { if ($this->hasRequestParam($param)) {unset(self::$data['params'][$param]);} }
 
     public function hasRequestParam($key): bool { return isset(self::$data['params'])&&isset(self::$data['params'][$key]); }
 
