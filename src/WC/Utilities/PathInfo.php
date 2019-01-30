@@ -139,4 +139,28 @@ class PathInfo
     public function getPathSuffix(): string {return $this->pathSfx;}
 
     public function setMinify(bool $flag) {$this->minify=$flag;}
+
+    public function toArray() {
+        return [
+            'uri' => $this->uri,
+            'selectors' => $this->getSelectors()->getAsArray(),
+            'parts' => $this->getParts()->getAsArray(),
+            'numSegments' => $this->getNumSegments(),
+            'nodeName' => $this->nodeName,
+            'ext' => $this->ext,
+            'selectorString' => $this->selectorString,
+            'path' => $this->path,
+            'pathFullName' => $this->pathFullName,
+            'minify' => $this->minify,
+            'file' => $this->file,
+            'fileFullName' => $this->fileFullName,
+            'queryString' => $this->getQueryString(),
+            'queryParams' => $this->getQueryParams()->getAsArray(),
+            'schema' => $this->getSchema(),
+            'host' => $this->getHost(),
+            'fullUrl' => $this->getFullUrl(),
+            'isHttps' => $this->isHttps(),
+            'pathSfx' => $this->getPathSuffix()
+        ];
+    }
 }
