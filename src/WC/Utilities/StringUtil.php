@@ -47,7 +47,8 @@ class StringUtil
     {
         $unit=array('b','kb','mb','gb','tb','pb');
         $base = 1024;
-        return @round($size/pow($base,($i=floor(log($size,$base)))),2).' '.$unit[$i];
+        $i=floor(log($size,$base));
+        return @round($size/pow($base,$i),2).' '.(isset($unit[$i])?$unit[$i]:$unit[0]);
     }
 
     public static function convertToBytes($from)

@@ -50,6 +50,10 @@ class Request
 
     public static function loadInstance() {new Request();}
 
+    public function hasFiles(): bool {return isset($_FILES) && is_array($_FILES) && sizeof($_FILES) > 0;}
+
+    public function getFiles(): array {return $this->hasFiles() ? end($_FILES) : [];}
+
     private function loadGlobals() {
 
         $this->validateSubmitSize();

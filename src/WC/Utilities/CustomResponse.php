@@ -12,7 +12,7 @@ class CustomResponse
 
     public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string {
         header('Content-Type: application/json; charset=utf-8');
-        http_response_code($code);
+        //http_response_code($code);
         die(self::getOutputFormattedAsString($data, $code, $msg));
     }
 
