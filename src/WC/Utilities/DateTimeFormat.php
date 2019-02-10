@@ -35,4 +35,19 @@ class DateTimeFormat
     public static function getSqlFormat() {return Date::$format;}
 
     public static function getStandardFormatString() {return "Y-m-d\TH:i:s";}
+
+    public static function RFC3339ByTimestamp(int $timestamp): string {
+        $date = date('Ymd\THisZ', $timestamp);
+        $matches = array();
+        if (preg_match('/^([\-+])(\d{2})(\d{2})$/', date('O', $timestamp), $matches)) {
+            $date .= $matches[1].$matches[2].':'.$matches[3];
+        } else {
+            $date .= 'Z';
+        }
+        return $date;
+    }
+
+    public static function RFC3339ByDateTime(string $date): string {
+        return self::RFC3339ByTimestamp(strtotime($date));
+    }
 }
