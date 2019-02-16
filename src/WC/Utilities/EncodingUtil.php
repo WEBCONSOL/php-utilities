@@ -6,8 +6,8 @@ class EncodingUtil
 {
     public static function isBase64Encoded($val): bool {return base64_encode(base64_decode($val, true)) === $val;}
 
-    public static function isValidJSON(string $str): bool {
-        if ($str) {
+    public static function isValidJSON($str): bool {
+        if (is_string($str) && $str) {
             $str = trim($str);
             $first = $str[0];
             $last = $str[strlen($str) - 1];
