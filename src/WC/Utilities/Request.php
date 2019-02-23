@@ -243,4 +243,16 @@ class Request
     public function isAjaxRequest(): bool {return self::$data['isAjax'];}
 
     public function pathInfo(): PathInfo {return self::$data['pathInfo'];}
+
+    public static function isTheSameOrigin(string $referer=''): bool {
+        if (!$referer) {
+            $referer = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        }
+        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+        if ($referer && $host) {
+            $parts = explode('/', $referer);
+            return isset($parts[2]) && $parts[2] === $host;
+        }
+        return false;
+    }
 }
