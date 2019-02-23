@@ -9,6 +9,7 @@ class Request
     private $schema_https = "https://";
     private $allowedContentType = array('application/json','application/json; charset=utf-8','application/x-www-form-urlencoded','application/x-www-form-urlencoded; charset=utf-8','multipart/form-data-encoded','multipart/form-data');
     private $allowedMethods = array('GET','PUT','DELETE','POST');
+    private $files = [];
 
     public function __construct(array $config=array())
     {
@@ -26,6 +27,7 @@ class Request
             self::$data['isAjax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' : false;;
             self::$data['referer'] = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : "";
             self::$data['pathInfo'] = new PathInfo($_SERVER["REQUEST_URI"]);
+            $this->files = isset($_FILES) && is_array($_FILES) && sizeof($_FILES) ? end($_FILES) : [];
             $this->loadGlobals();
         }
     }
@@ -50,9 +52,16 @@ class Request
 
     public static function loadInstance() {new Request();}
 
-    public function hasFiles(): bool {return isset($_FILES) && is_array($_FILES) && sizeof($_FILES) > 0;}
+    public function hasFiles(): bool {return !empty($this->files);}
 
-    public function getFiles(): array {return $this->hasFiles() ? end($_FILES) : [];}
+    public function getFiles(): array {
+        if (empty($this->files) && $this->hasFiles()) {
+            $this->files = end($_FILES);
+        }
+        return $this->files;
+    }
+
+    public function setFiles(array $files) {$this->files = $files;}
 
     private function loadGlobals() {
 
