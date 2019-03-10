@@ -30,7 +30,7 @@ class CustomResponse
             $output['message'] = $msg;
         }
 
-        $output['data'] = sizeof($data) ? $data : null;
+        $output['data'] = !empty($data) ? $data : null;
         if (self::$debug) {
             $output['debug'] = debug_backtrace();
         }
