@@ -4,6 +4,7 @@ namespace WC\Utilities;
 
 class Request
 {
+    protected $formName = '';
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
@@ -114,6 +115,11 @@ class Request
         if (is_array($_GET)) {
             self::$data['params'] = array_merge(self::$data['params'], $_GET);
         }
+
+        if ($this->formName && isset(self::$data['postData'][$this->formName])) {
+            self::$data['postData'] = self::$data['postData'][$this->formName];
+        }
+
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
     }
 
