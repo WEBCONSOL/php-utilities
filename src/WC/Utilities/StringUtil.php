@@ -159,7 +159,7 @@ class StringUtil
     public static function cleanCommaSeparatedIds(string $ids): array {
         $ids = explode(',', $ids);
         foreach ($ids as $i=>$id) {
-            $ids[$i] = (int)$id;
+            $ids[$i] = (int)strip_tags($id);
         }
         return $ids;
     }
