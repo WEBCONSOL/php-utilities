@@ -5,6 +5,7 @@ namespace WC\Utilities;
 class Request
 {
     protected $formName = '';
+    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a>';
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
@@ -121,6 +122,35 @@ class Request
         }
 
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
+
+        $this->sanitizeHeaderData(self::$data['header']);
+        $this->sanitizeParams(self::$data['params']);
+    }
+
+    private function sanitizeHeaderData(array &$data) {
+        if (!empty($data)) {
+            foreach ($data as $k=>$v) {
+                if (is_string($v)) {
+                    $data[$k] = strip_tags($v);
+                }
+                else if (is_array($v)) {
+                    $this->sanitizeHeaderData($data[$k]);
+                }
+            }
+        }
+    }
+
+    private function sanitizeParams(array &$data) {
+        if (!empty($data)) {
+            foreach ($data as $k=>$v) {
+                if (is_string($v)) {
+                    $data[$k] = strip_tags($v, $this->allowedTags);
+                }
+                else if (is_array($v)) {
+                    $this->sanitizeHeaderData($data[$k]);
+                }
+            }
+        }
     }
 
     public function isAllowedContentType(): bool {return in_array($this->getHeaderParam('Content-Type'), $this->allowedContentType);}
