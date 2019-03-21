@@ -62,8 +62,6 @@ class Request
 
     private function loadGlobals() {
 
-        $this->validateSubmitSize();
-
         // header data
         self::$data['header'] = getallheaders();
         $obj = $this->getHeaderParam('Access-Control-Request-Headers');
@@ -266,19 +264,6 @@ class Request
     public function isDELETE(): bool {return $this->method()==='DELETE';}
 
     public function isPUT(): bool {return $this->method()==='PUT';}
-
-    private function validateSubmitSize() {
-        if ($this->isPOST()) {
-            $n1 = $_SERVER['CONTENT_LENGTH'];
-            $n2 = StringUtil::convertToBytes(ini_get('post_max_size'));
-            if (!$n1) {
-                CustomResponse::render(400, 'The submitting content size is 0.');
-            }
-            else if ($n1 > $n2) {
-                CustomResponse::render(400, 'The submitting content size is too large.');
-            }
-        }
-    }
 
     public function isAjaxRequest(): bool {return self::$data['isAjax'];}
 
