@@ -5,6 +5,7 @@ namespace WC\Utilities;
 class Request
 {
     protected $formName = '';
+    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a>';
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
@@ -121,6 +122,35 @@ class Request
         }
 
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
+
+        $this->sanitizeHeaderData(self::$data['header']);
+        $this->sanitizeParams(self::$data['params']);
+    }
+
+    private function sanitizeHeaderData(array &$data) {
+        if (!empty($data)) {
+            foreach ($data as $k=>$v) {
+                if (is_string($v)) {
+                    $data[$k] = strip_tags($v);
+                }
+                else if (is_array($v)) {
+                    $this->sanitizeHeaderData($data[$k]);
+                }
+            }
+        }
+    }
+
+    private function sanitizeParams(array &$data) {
+        if (!empty($data)) {
+            foreach ($data as $k=>$v) {
+                if (is_string($v)) {
+                    $data[$k] = strip_tags($v, $this->allowedTags);
+                }
+                else if (is_array($v)) {
+                    $this->sanitizeHeaderData($data[$k]);
+                }
+            }
+        }
     }
 
     public function isAllowedContentType(): bool {return in_array($this->getHeaderParam('Content-Type'), $this->allowedContentType);}
@@ -237,7 +267,8 @@ class Request
 
     public function isPUT(): bool {return $this->method()==='PUT';}
 
-    private function validateSubmitSize() {
+    protected function validateSubmitSize() {
+        /*
         if ($this->isPOST()) {
             $n1 = $_SERVER['CONTENT_LENGTH'];
             $n2 = StringUtil::convertToBytes(ini_get('post_max_size'));
@@ -248,6 +279,7 @@ class Request
                 CustomResponse::render(400, 'The submitting content size is too large.');
             }
         }
+        */
     }
 
     public function isAjaxRequest(): bool {return self::$data['isAjax'];}

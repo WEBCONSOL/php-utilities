@@ -155,4 +155,12 @@ class StringUtil
     }
 
     public static function contains($haystack, $needle) {return strpos($haystack, $needle) !== false;}
+
+    public static function cleanCommaSeparatedIds(string $ids): array {
+        $ids = explode(',', $ids);
+        foreach ($ids as $i=>$id) {
+            $ids[$i] = (int)strip_tags($id);
+        }
+        return $ids;
+    }
 }
