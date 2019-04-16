@@ -57,6 +57,16 @@ class ClientlibManager
 
     public function getContent(): string {return $this->content;}
 
+    public function isStyle(): bool {return $this->isStyle;}
+    public function isScript(): bool {return $this->isScript;}
+    public function isJSON(): bool {return $this->isJSON;}
+    public function getContentTypeHeader(): string {
+        if ($this->isStyle()) {return 'text/css; charset=utf-8';}
+        else if ($this->isScript()) {return 'application/javascript; charset=utf-8';}
+        else if ($this->isJSON()) {return 'application/json; charset=utf-8';}
+        else {return "text/html; charset=utf-8";}
+    }
+
     public function setRenderHeaderContentType() {
         if ($this->isStyle) {
             header('Content-Type: text/css; charset=utf-8');
