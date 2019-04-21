@@ -44,7 +44,16 @@ class Request
         }
     }
 
-    protected function getParam(string $key) {$v = $this->getRequestParam($key);if (!$v) {$v = $this->getHeaderParam($key);}return $v;}
+    protected function getParam(string $key) {
+        $v = $this->getRequestParam($key);
+        if (!$v) {
+            $v = $this->getHeaderParam($key);
+        }
+        if (EncodingUtil::isValidJSON($v)) {
+            $v = json_decode($v, true);
+        }
+        return $v;
+    }
 
     protected function getParamKeys(): array {return array_keys(self::$data['params']);}
 
@@ -190,7 +199,15 @@ class Request
     public function hasHeaderParam($key): bool {  return isset(self::$data['header'])&&isset(self::$data['header'][$key]); }
 
     public function getHeaderParam($param, $default = ''): string {
-        if ($this->hasHeaderParam($param)) {
+        if ($this->hasHeaderParam(strtolower($param))) {
+            $val = self::$data['header'][strtolower($param)];
+            return is_string($val) ? rawurldecode($val) : json_encode($val);
+        }
+        else if ($this->hasHeaderParam(strtoupper($param))) {
+            $val = self::$data['header'][strtoupper($param)];
+            return is_string($val) ? rawurldecode($val) : json_encode($val);
+        }
+        else if ($this->hasHeaderParam($param)) {
             $val = self::$data['header'][$param];
             return is_string($val) ? rawurldecode($val) : json_encode($val);
         }
