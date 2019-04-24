@@ -163,4 +163,12 @@ class StringUtil
         }
         return $ids;
     }
+
+    public static function cleanCommaSeparatedString(string $ids): array {
+        $ids = explode(',', $ids);
+        foreach ($ids as $i=>$id) {
+            $ids[$i] = strip_tags($id);
+        }
+        return $ids;
+    }
 }
