@@ -31,7 +31,6 @@ class Request
             self::$data['pathInfo'] = new PathInfo($_SERVER["REQUEST_URI"]);
             $this->loadGlobals();
         }
-        $this->files = isset($_FILES) ? $_FILES : [];
     }
 
     private function cloudflareSSL() {
@@ -63,11 +62,11 @@ class Request
 
     public static function loadInstance() {new Request();}
 
-    public function hasFiles(): bool {return !empty($this->files);}
+    public function hasFiles(): bool {return !empty(self::$data['files']);}
 
-    public function getFiles($form=''): array {return $form && isset($this->files[$form]) ? $this->files[$form] : $this->files;}
+    public function getFiles($form=''): array {return $form&&isset(self::$data['files'][$form])?self::$data['files'][$form]:self::$data['files'];}
 
-    public function setFiles(array $files) {$this->files = $files;}
+    public function setFiles(array $files) {self::$data['files'] = $files;}
 
     private function loadGlobals() {
 
@@ -131,6 +130,8 @@ class Request
         }
 
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
+
+        self::$data['files'] = isset($_FILES) ? $_FILES : [];
 
         $this->sanitizeHeaderData(self::$data['header']);
         $this->sanitizeParams(self::$data['params']);
