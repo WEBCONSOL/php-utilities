@@ -36,6 +36,10 @@ class DateTimeFormat
 
     public static function getStandardFormatString() {return "Y-m-d\TH:i:s";}
 
+    public static function getDateFormatString() {return "Y-m-d";}
+
+    public static function getDateTimeFormatString() {return self::getStandardFormatString();}
+
     public static function RFC3339ByTimestamp(int $timestamp): string {
         $date = date('Ymd\THisZ', $timestamp);
         $matches = array();
