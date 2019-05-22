@@ -8,8 +8,11 @@ class PathUtil
     {
         $s = strtolower(trim($s));
         $s = preg_replace('/[^a-z0-9-]/', $delimiter, $s);
-        $s = preg_replace('/' . $delimiter . '+/', $delimiter, $s);
-        return trim($s, $delimiter);
+        if ($delimiter) {
+            $s = preg_replace('/' . $delimiter . '+/', $delimiter, $s);
+            return trim($s, $delimiter);
+        }
+        return $s;
     }
 
     public static function formatUri(string $uri, array $params): string {
