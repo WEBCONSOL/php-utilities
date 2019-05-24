@@ -17,6 +17,8 @@ class ClientlibManager
     private $lessVars = array();
     private $sassVars = array();
     private $assetDir = '';
+    private $patterns = null;
+    private $replaces = null;
 
     public function __construct(string $root, string $q, array $vars=array(), bool $isMinify=false)
     {
@@ -55,6 +57,9 @@ class ClientlibManager
         }
     }
 
+    public function setPatterns($p) {$this->patterns=$p;}
+    public function setReplaces($r) {$this->replaces=$r;}
+
     public function getContent(): string {return $this->content;}
 
     public function isStyle(): bool {return $this->isStyle;}
@@ -82,7 +87,11 @@ class ClientlibManager
     public function renderContent()
     {
         $this->setRenderHeaderContentType();
-        echo str_replace(['../fonts'], [$this->assetDir.'/fonts'], $this->content);
+        if ($this->patterns === null && $this->replaces === null) {
+            $this->patterns = ['../fonts'];
+            $this->replaces = [$this->assetDir.'/fonts'];
+        }
+        echo str_replace($this->patterns, $this->replaces, $this->content);
     }
 
     private function loadStatic()
