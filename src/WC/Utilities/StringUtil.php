@@ -175,6 +175,6 @@ class StringUtil
                 $newIds[] = strip_tags($id);
             }
         }
-        return $ids;
+        return $newIds;
     }
 }
