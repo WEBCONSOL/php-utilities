@@ -65,7 +65,7 @@ class ClientlibManager
             $buffer = [];
             foreach ($list as $item) {
                 $name = pathinfo($item, PATHINFO_FILENAME);
-                $buffer[] = 'Ezpz.hbs.set("'.$name.'", phpjs.base64_decode("'.base64_encode(file_get_contents($item)).'"));';
+                $buffer[] = 'Ezpz.hbs.set("'.$name.'", Ezpz.utils.base64Decode("'.base64_encode(file_get_contents($item)).'"));';
             }
             echo implode('', $buffer);
         }
