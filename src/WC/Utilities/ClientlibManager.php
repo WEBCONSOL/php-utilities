@@ -57,6 +57,20 @@ class ClientlibManager
         }
     }
 
+    public static function renderHBSTemplates(string $root, string $q) {
+        header('Content-Type: application/javascript; charset=utf-8');
+        $pattern = $root.$q.'/*.hbs';
+        $list = glob($pattern);
+        if (!empty($list)) {
+            $buffer = [];
+            foreach ($list as $item) {
+                $name = pathinfo($item, PATHINFO_FILENAME);
+                $buffer[] = 'Ezpz.hbs.set("'.$name.'", phpjs.base64_decode("'.base64_encode(file_get_contents($item)).'"));';
+            }
+            echo implode('', $buffer);
+        }
+    }
+
     public function setPatterns($p) {$this->patterns=$p;}
     public function setReplaces($r) {$this->replaces=$r;}
 
