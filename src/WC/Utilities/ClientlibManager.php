@@ -57,7 +57,7 @@ class ClientlibManager
         }
     }
 
-    public static function renderHBSTemplates(string $root, string $q) {
+    public static function renderHBSTemplates(string $root, string $q, string $format) {
         header('Content-Type: application/javascript; charset=utf-8');
         $pattern = $root.$q.'/*.hbs';
         $list = glob($pattern);
@@ -65,7 +65,7 @@ class ClientlibManager
             $buffer = [];
             foreach ($list as $item) {
                 $name = pathinfo($item, PATHINFO_FILENAME);
-                $buffer[] = 'Ezpz.hbs.set("'.$name.'", Ezpz.utils.base64Decode("'.base64_encode(file_get_contents($item)).'"));';
+                $buffer[] = sprintf($format, $name, base64_encode(file_get_contents($item)));
             }
             echo implode('', $buffer);
         }
