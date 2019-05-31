@@ -57,17 +57,19 @@ class ClientlibManager
         }
     }
 
-    public static function renderHBSTemplates(string $root, string $q, string $format) {
-        header('Content-Type: application/javascript; charset=utf-8');
-        $pattern = $root.$q.'/*.hbs';
+    public static function renderHBSTemplates(string $root, string $q, string $format, array &$buffer, string $parent='') {
+        $pattern = $root.$q.'/*';
         $list = glob($pattern);
         if (!empty($list)) {
-            $buffer = [];
             foreach ($list as $item) {
                 $name = pathinfo($item, PATHINFO_FILENAME);
-                $buffer[] = sprintf($format, $name, base64_encode(file_get_contents($item)));
+                if (is_dir($item)) {
+                    self::renderHBSTemplates($item, '', $format, $buffer, $name);
+                }
+                else if (pathinfo($item, PATHINFO_EXTENSION) === 'hbs') {
+                    $buffer[] = sprintf($format, ($parent?$parent.'-':'').$name, base64_encode(file_get_contents($item)));
+                }
             }
-            echo implode('', $buffer);
         }
     }
 
