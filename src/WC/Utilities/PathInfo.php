@@ -42,7 +42,7 @@ class PathInfo
             $this->port = $_SERVER['SERVER_PORT'];
         }
         else {
-            if (StringUtil::startsWith($q, $this->https) || StringUtil::startsWith($q, $this->http)) {
+            if ($this->isExternal($q)) {
                 if (StringUtil::startsWith($q, $this->https)) {
                     $this->schema = $this->https;
                 }
@@ -163,4 +163,6 @@ class PathInfo
             'pathSfx' => $this->getPathSuffix()
         ];
     }
+
+    private function isExternal($q) {return StringUtil::startsWith($q, $this->https) || StringUtil::startsWith($q, $this->http);}
 }
