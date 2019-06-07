@@ -13,16 +13,19 @@ class CacheManager
     private $hasFile = false;
     private $cacheIgnoreConfig = null;
     private $reqPath = '';
+    private $ds = '/';
 
     public function __construct($root, $host=null, $path=null)
     {
+        $this->ds = defined('DIRECTORY_SEPARATOR') ? DIRECTORY_SEPARATOR : '/';
+        $root = str_replace('\\', $this->ds, $root);
         $this->createDir($root);
         $pathInfo = new PathInfo();
         $ext = $pathInfo->getExtension();
         $this->host = $host !== null ? $host : $pathInfo->getHost();
         if ($path === null) {$path=$pathInfo->getPath();}
         $this->reqPath = (!$path||$path==='/'?'home':$path).($ext?'.'.$ext:'');
-        $this->root = $root . DS . $this->host;
+        $this->root = $root . $this->ds . $this->host;
         $this->filePath = $this->root.'/'.$this->reqPath;
         $this->hasFile = file_exists($this->filePath);
         $this->loadContent();
@@ -202,7 +205,7 @@ class CacheManager
         @umask($origmask);
     }
 
-    private function clean($path, $ds = DIRECTORY_SEPARATOR)
+    private function clean($path)
     {
         if (!\is_string($path))
         {
@@ -225,15 +228,15 @@ class CacheManager
         {
             $path = JPATH_ROOT;
         }
-        elseif (($ds == '\\') && ($path[0] == '\\' ) && ( $path[1] == '\\' ))
+        elseif (($this->ds == '\\') && ($path[0] == '\\' ) && ( $path[1] == '\\' ))
             // Remove double slashes and backslashes and convert all slashes and backslashes to DIRECTORY_SEPARATOR
             // If dealing with a UNC path don't forget to prepend the path with a backslash.
         {
-            $path = "\\" . preg_replace('#[/\\\\]+#', $ds, $path);
+            $path = "\\" . preg_replace('#[/\\\\]+#', $this->ds, $path);
         }
         else
         {
-            $path = preg_replace('#[/\\\\]+#', $ds, $path);
+            $path = preg_replace('#[/\\\\]+#', $this->ds, $path);
         }
 
         return $scheme . $path;
