@@ -4,6 +4,8 @@ namespace WC\Utilities;
 
 class Logger
 {
+    private static $DEBUG = false;
+
     private function __construct(){}
 
     public static function log($message, $message_type = null, $destination = null, $extra_headers = null) {
@@ -38,20 +40,23 @@ class Logger
         }
     }
 
-    public static function generateCallTrace(int $index = -1)
+    public static function generateCallTrace(int $index = -1): string
     {
-        $trace = debug_backtrace();
-        if ($index !== -1) {
-            if (isset($trace[$index])) {
-                $trace = self::formatTrace($trace[$index]);
-            }
-            else {
-                foreach ($trace as $i=>$arg) {
-                    $trace[$i] = self::formatTrace($trace[$i]);
+        if (self::$DEBUG) {
+            $trace = debug_backtrace();
+            if ($index !== -1) {
+                if (isset($trace[$index])) {
+                    $trace = self::formatTrace($trace[$index]);
+                }
+                else {
+                    foreach ($trace as $i=>$arg) {
+                        $trace[$i] = self::formatTrace($trace[$i]);
+                    }
                 }
             }
+            return json_encode($trace);
         }
-        return json_encode($trace);
+        return "";
     }
 
     private static function formatTrace(array $trace) {
