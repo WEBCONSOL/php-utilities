@@ -16,11 +16,13 @@ class Minify {
             return '<' . $matches[1] . preg_replace('#([^\s=]+)(\=([\'"]?)(.*?)\3)?(\s+|$)#s', ' $1$2', $matches[2]) . $matches[3] . '>';
         }, str_replace("\r", "", $input));
         // Minify inline CSS declaration(s)
+        /*
         if (strpos($input, ' style=') !== false) {
             $input = preg_replace_callback('#<([^<]+?)\s+style=([\'"])(.*?)\2(?=[\/\s>])#s', function($matches) {
                 return '<' . $matches[1] . ' style=' . $matches[2] . self::css($matches[3]) . $matches[2];
             }, $input);
         }
+        */
         
         return preg_replace(
             array(
