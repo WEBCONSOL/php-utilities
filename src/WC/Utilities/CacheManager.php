@@ -25,6 +25,16 @@ class CacheManager
         $this->host = $host !== null ? $host : $pathInfo->getHost();
         if ($path === null) {$path=$pathInfo->getPath();}
         $this->reqPath = (!$path||$path==='/'?'home':$path).($ext?'.'.$ext:'');
+
+        if ($pathInfo->getQueryParams()->hasElement()) {
+            $selectors = [];
+            foreach ($pathInfo->getQueryParams()->getAsArray() as $k=>$v) {
+                $selectors[] = $k.':'.$v;
+            }
+            $this->reqPath = pathinfo($this->reqPath, PATHINFO_FILENAME).'.'.
+                implode('.', $selectors).'.'.
+                pathinfo($this->reqPath, PATHINFO_EXTENSION);
+        }
         $this->root = $root . $this->ds . $this->host;
         $this->filePath = $this->root.'/'.$this->reqPath;
         $this->hasFile = file_exists($this->filePath);
