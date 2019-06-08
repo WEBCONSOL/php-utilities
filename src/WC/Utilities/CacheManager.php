@@ -64,6 +64,7 @@ class CacheManager
     private function hasConfig() {return $this->cacheIgnoreConfig !== null && (isset($this->cacheIgnoreConfig['global']) || isset($this->cacheIgnoreConfig[$this->host]));}
 
     private function cacheable(string $path): bool {
+        $this->removeExtension($path);
         if (!$this->hasConfig()) {return true;}
         $global = isset($this->cacheIgnoreConfig['global']) ? $this->cacheIgnoreConfig['global'] : array();
         if (sizeof($global)) {
@@ -74,6 +75,7 @@ class CacheManager
                     $match = PregUtil::getMatches($item, $path);
                     if (sizeof($match)) {return false;}
                 }
+                else if ($this->removeExtension($item) === $path) {return false;}
             }
         }
         $data = isset($this->cacheIgnoreConfig[$this->host]) ? $this->cacheIgnoreConfig[$this->host] : array();
@@ -84,9 +86,17 @@ class CacheManager
                     $match = PregUtil::getMatches($item, $path);
                     if (sizeof($match)) {return false;}
                 }
+                else if ($this->removeExtension($item) === $path) {return false;}
             }
         }
         return true;
+    }
+
+    private function removeExtension(string &$path) {
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        if ($ext) {
+            $path = str_replace('.'.$ext, '', $path);
+        }
     }
 
     private function loadContent() {if ($this->hasFile) {$this->content = file_get_contents($this->filePath);}}
