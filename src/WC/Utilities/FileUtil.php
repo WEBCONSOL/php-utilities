@@ -196,5 +196,18 @@ class FileUtil
 
     public static function getExtension($f): string {return pathinfo($f, PATHINFO_EXTENSION);}
 
-    public static function mime2ext($mime): string {return $mime && isset(self::$mime_map[$mime]) ? self::$mime_map[$mime] : '';}
+    public static function mime2ext($mime): string {return isset(self::$mime_map[$mime]) ? self::$mime_map[$mime] : '';}
+
+    public static function fetchCache($dir, &$list) {
+        $glob = glob($dir.'/*');
+        foreach ($glob as $f) {
+            if (is_dir($f)) {
+                $list[] = $f;
+                self::fetchCache($f, $list);
+            }
+            else {
+                $list[] = $f;
+            }
+        }
+    }
 }

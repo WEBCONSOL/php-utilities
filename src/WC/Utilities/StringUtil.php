@@ -115,16 +115,19 @@ class StringUtil
     public static function isHttps($uri): bool {return self::startsWith($uri, "https://");}
 
     public static function isRegExp($str): bool {
-        $newStr = '/' . addcslashes($str, "/\n\t\r") . '/';
-        if (@preg_match($newStr, '') !== false) {
-            if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
-             strpos($newStr, '*')!==false) {
-                return true;
-            }
-            if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
-                return true;
+        try {
+            $newStr = '/' . addcslashes($str, "/\n\t\r") . '/';
+            if (@preg_match($newStr, '') !== false) {
+                if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
+                    strpos($newStr, '*')!==false) {
+                    return true;
+                }
+                if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
+                    return true;
+                }
             }
         }
+        catch (\Exception $e) {}
         return false;
     }
 
