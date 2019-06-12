@@ -198,15 +198,17 @@ class FileUtil
 
     public static function mime2ext($mime): string {return isset(self::$mime_map[$mime]) ? self::$mime_map[$mime] : '';}
 
-    public static function fetchCache($dir, &$list) {
+    public static function fetchCache($dir, &$list, array $ignore=array()) {
         $glob = glob($dir.'/*');
         foreach ($glob as $f) {
-            if (is_dir($f)) {
-                $list[] = $f;
-                self::fetchCache($f, $list);
-            }
-            else {
-                $list[] = $f;
+            if (empty($ignore) || !in_array($f, $ignore)) {
+                if (is_dir($f)) {
+                    $list[] = $f;
+                    self::fetchCache($f, $list);
+                }
+                else {
+                    $list[] = $f;
+                }
             }
         }
     }
