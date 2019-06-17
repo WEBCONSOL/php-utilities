@@ -18,6 +18,7 @@
         "mrclay/jsmin-php": "^2.3",
         "natxet/CssMin": "^3.0",
         "lcobucci/jwt": "^3.2",
+        "mashape/unirest-php": "^3.0",
         "ext-json": "^1.6"
     },
     "autoload": {
