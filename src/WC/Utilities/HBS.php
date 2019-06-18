@@ -8,6 +8,12 @@ class HBS
 
     private function __construct(){}
 
+    public static function renderTemplate(string $name, string $str) {
+        echo '<script id="entry-template" type="text/x-handlebars-template" '.self::$attr.'="'.$name.'">';
+        if (is_file($str)) {include $str;} else {echo $str;}
+        echo '<'.'/script>';
+    }
+
     public static function loadTemplates(string $root) {
         $list = [];
         if (StringUtil::endsWith($root, "/*.hbs")) {
@@ -22,9 +28,7 @@ class HBS
         if (!empty($list)) {
             foreach ($list as $item) {
                 $filename = pathinfo($item, PATHINFO_FILENAME);
-                echo '<script id="entry-template" type="text/x-handlebars-template" '.self::$attr.'="'.$filename.'">';
-                include $item;
-                echo '<'.'/script>';
+                self::renderTemplate($filename, $item);
             }
         }
     }
@@ -43,9 +47,7 @@ class HBS
                     else {
                         $filename = pathinfo($item, PATHINFO_FILENAME);
                     }
-                    echo '<script id="entry-template" type="text/x-handlebars-template" '.self::$attr.'="'.$filename.'">';
-                    include $item;
-                    echo '<'.'/script>';
+                    self::renderTemplate($filename, $item);
                 }
             }
         }
