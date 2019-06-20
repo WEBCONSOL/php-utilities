@@ -4,12 +4,12 @@ namespace WC\Utilities;
 
 class HBS
 {
-    public static $attr = 'data-hbs';
+    const ATTR_NAME = 'data-hbs';
 
     private function __construct(){}
 
     public static function renderTemplate(string $name, string $str) {
-        echo '<script id="entry-template" type="text/x-handlebars-template" '.self::$attr.'="'.$name.'">';
+        echo '<script id="entry-template" type="text/x-handlebars-template" '.ATTR_NAME.'="'.$name.'">';
         if (is_file($str)) {include $str;} else {echo $str;}
         echo '<'.'/script>';
     }
@@ -49,6 +49,15 @@ class HBS
                     }
                     self::renderTemplate($filename, $item);
                 }
+            }
+        }
+    }
+
+    public static function loadTemplatesList(array $list) {
+        if (!empty($list)) {
+            foreach ($list as $file) {
+                $tmpl = pathinfo($file, PATHINFO_FILENAME);
+                self::renderTemplate($tmpl, $file);
             }
         }
     }
