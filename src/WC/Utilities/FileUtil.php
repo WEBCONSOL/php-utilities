@@ -194,6 +194,42 @@ class FileUtil
         return false;
     }
 
+    public static function getImageAttributes(string $filename): array {
+        $attrs = getimagesize($filename);
+        $newAttrs = [];
+        if (is_array($attrs)) {
+            $newAttrs['width'] = isset($attrs[0]) ? $attrs[0] : 0;
+            $newAttrs['height'] = isset($attrs[1]) ? $attrs[1] : 0;
+            $newAttrs['bits'] = isset($attrs['bits']) ? $attrs['bits'] : '';
+            $newAttrs['channels'] = isset($attrs['channels']) ? $attrs['channels'] : '';
+            $newAttrs['mime'] = isset($attrs['mime']) ? $attrs['mime'] : '';
+        }
+        return $newAttrs;
+    }
+
+    public static function isImage(string $str): bool {
+        if (is_file($str)) {
+            $dim = @getimagesize($str);
+            return is_array($dim);
+        }
+        else if (self::mime2ext($str)) {
+            $parts = explode('/', $str);
+            return $parts[0] === 'image';
+        }
+        return false;
+    }
+
+    public static function getMimetype(string $filename): string {
+        $mimtype = '';
+        if (function_exists('finfo_open')) {
+            $fopen = finfo_open(FILEINFO_MIME_TYPE);
+            $mimtype = finfo_file($fopen, $filename);
+        } else if(function_exists('mime_content_type')) {
+            $mimtype = mime_content_type($filename);
+        }
+        return $mimtype;
+    }
+
     public static function getExtension($f): string {return pathinfo($f, PATHINFO_EXTENSION);}
 
     public static function mime2ext($mime): string {return isset(self::$mime_map[$mime]) ? self::$mime_map[$mime] : '';}
