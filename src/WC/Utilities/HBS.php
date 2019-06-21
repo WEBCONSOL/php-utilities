@@ -9,7 +9,7 @@ class HBS
     private function __construct(){}
 
     public static function renderTemplate(string $name, string $str) {
-        echo '<script id="entry-template" type="text/x-handlebars-template" '.ATTR_NAME.'="'.$name.'">';
+        echo '<script id="entry-template" type="text/x-handlebars-template" '.self::ATTR_NAME.'="'.$name.'">';
         if (is_file($str)) {include $str;} else {echo $str;}
         echo '<'.'/script>';
     }
@@ -60,5 +60,16 @@ class HBS
                 self::renderTemplate($tmpl, $file);
             }
         }
+    }
+
+    public static function loadTemplatesListIntoJS(array $list): string {
+        $buffer = [];
+        if (!empty($list)) {
+            foreach ($list as $file) {
+                $tmpl = pathinfo($file, PATHINFO_FILENAME);
+                $buffer[] = 'Ezpz.hbs.set("'.$tmpl.'",Ezpz.utils.base64Decode("'.base64_encode(file_get_contents($file)).'"));';
+            }
+        }
+        return implode('', $buffer);
     }
 }
