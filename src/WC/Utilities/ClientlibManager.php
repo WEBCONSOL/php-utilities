@@ -25,9 +25,7 @@ class ClientlibManager
         $parts = explode('/', $root);
         $this->assetDir = '/'.$parts[sizeof($parts)-1] . '/' . pathinfo($q, PATHINFO_FILENAME);
 
-        if (!defined('DS')) {
-            define('DS', DIRECTORY_SEPARATOR);
-        }
+        defined('DS') or define('DS', DIRECTORY_SEPARATOR);
         $this->lessVars = isset($vars['less']) && is_array($vars['less']) ? $vars['less'] : array();
         $this->sassVars = isset($vars['sass']) && is_array($vars['sass']) ? $vars['sass'] : array();
         $this->root = $root;
