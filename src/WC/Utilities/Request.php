@@ -5,7 +5,7 @@ namespace WC\Utilities;
 class Request
 {
     protected $formName = '';
-    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a>';
+    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a><h1><h2><h3><h4><h5><img>';
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
