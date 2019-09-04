@@ -41,7 +41,7 @@ final class Envelop
         }
     }
 
-    public function to(string $addr, string $name) {$this->mailer->addAddress($addr, $name);}
+    public function to(string $addr, string $name='') {$this->mailer->addAddress($addr, $name);}
 
     public function subject(string $subject) {$this->mailer->Subject = $subject;}
 
