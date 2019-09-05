@@ -4,7 +4,12 @@ namespace WC\Utilities;
 
 class EncodingUtil
 {
-    public static function isBase64Encoded($val): bool {return base64_encode(base64_decode($val, true)) === $val;}
+    public static function isBase64Encoded($val): bool {
+        if (!base64_decode(base64_decode($val, true), true)) {
+            return false;
+        }
+        return base64_encode(base64_decode($val, true)) === $val;
+    }
 
     public static function isValidJSON($str): bool {
         if (is_string($str) && $str) {
