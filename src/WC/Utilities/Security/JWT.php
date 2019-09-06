@@ -43,7 +43,7 @@ final class JWT {
             }
         }
         catch (\Exception $e) {
-            Logger::error($e->getMessage());
+            Logger::error($e);
         }
         return '';
     }
