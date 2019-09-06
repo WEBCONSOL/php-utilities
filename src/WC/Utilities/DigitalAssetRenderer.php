@@ -41,7 +41,7 @@ class DigitalAssetRenderer
                         echo $fileSystem->read($this->requestFile);
                     }
                     catch (\League\Flysystem\FileNotFoundException $e) {
-                        Logger::error('digital_asset_renderer. '.$e->getMessage());
+                        Logger::error($e);
                         http_response_code(500);
                         die('Error: '.$e->getMessage());
                     }
