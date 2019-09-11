@@ -78,6 +78,7 @@ class ClientlibManager
 
     public function getContent(): string {return $this->content;}
 
+    public function isMinify(): bool {return $this->pathInfo->isMinify();}
     public function isStyle(): bool {return $this->isStyle;}
     public function isScript(): bool {return $this->isScript;}
     public function isJSON(): bool {return $this->isJSON;}
