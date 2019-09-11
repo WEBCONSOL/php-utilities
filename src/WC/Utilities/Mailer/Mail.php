@@ -2,9 +2,7 @@
 
 namespace WC\Utilities\Mailer;
 
-use GX2CMS\TemplateEngine\GX2CMS;
-use GX2CMS\TemplateEngine\Model\Context;
-use GX2CMS\TemplateEngine\Model\Tmpl;
+use HandlebarsHelpers\Hbs;
 use WC\Models\ListModel;
 use WC\Utilities\CustomResponse;
 
@@ -15,54 +13,67 @@ final class Mail
     const KEY_TO_EMAIL = "email";
     const KEY_TO_NAME = "name";
     private $envelop;
-    private $gx2cmsTmpl = true;
+    private $templatingEngine = '';
+    private $data = [];
+    private $missingData = false;
+    private $opensslPkcs7Encrypt = false;
+    private $sslKey = '';
+    private $sslCertificate = '';
+    private $privateKeyPassword = ''; // optional
+    private $sslCertChain = ''; // optional
 
-    public function __construct(array $to, string $tpl, array $data, string $subject, array $from=array(), bool $gx2cmsTmpl=true)
+    public function __construct(bool $isHTML, array $from, array $to, string $subject, string $message, array $data=array(), string $templatingEngine='')
     {
-        $this->gx2cmsTmpl = $gx2cmsTmpl;
-        $this->prepareEnvelop($to, $tpl, $data, $subject, $from);
+        $this->templatingEngine = $templatingEngine;
+        $this->data = $data;
+        $this->envelop = new Envelop(null, $isHTML);
+        $this->prepareEnvelop($from, $to, $subject, $message);
     }
 
-    private function prepareEnvelop(array $to, string $tpl, array $data, string $subject, array $from=array())
+    public function setTemplatingEngine(string $s) {$this->templatingEngine = $s;}
+    public function setData(array $data) {$this->data = $data;}
+
+    public function setOpenSSLPkcs7Encrypt(bool $b) {$this->opensslPkcs7Encrypt = $b;}
+    public function setSSLCertificate(string $s) {$this->sslCertificate = $s;}
+    public function setSSLKey(string $s) {$this->sslKey = $s;}
+    public function setPrivateKeyPassword(string $s) {$this->privateKeyPassword = $s;}
+    public function setSSLCertChain(string $s) {$this->sslCertChain = $s;}
+
+    public function setReplyTo(string $email, string $name='') {$this->envelop->replyTo($email, $name);}
+    public function addCC(string $addr, string $name) {$this->envelop->addCC($addr, $name);}
+    public function addBCC(string $addr, string $name) {$this->envelop->addBCC($addr, $name);}
+    public function addAttachment(string $addr, string $name){$this->envelop->addAttachment($addr, $name);}
+
+
+    private function prepareEnvelop(array $from, array $to, string $subject, string $emailMessage)
     {
-        if (empty($from)) {
-            $from = new ListModel(PATH_COMMON_STATIC . DS . 'config' . DS . 'envelop.json');
-        }
-        else if (is_array($from)) {
-            $from = new ListModel($from);
-        }
-
-        if (is_array($to)) {
-            $to = new ListModel($to);
-        }
-
-        if (!$from->has(self::KEY_FROM_NAME) || !$from->has(self::KEY_FROM_ADDRESS) || !$to->has(self::KEY_TO_EMAIL) || !$to->has(self::KEY_TO_NAME) || empty($tpl))
+        if (((isset($to[0]) && isset($to[0][self::KEY_TO_EMAIL])) || isset($to[self::KEY_TO_EMAIL])) && isset($from[self::KEY_TO_EMAIL]) && $subject && $emailMessage)
         {
-            CustomResponse::render(500, "Mail required data missing");
-        }
+            if ($this->templatingEngine === 'gx2cms') {
+                $ezpzTmpl = new GX2CMS\TemplateEngine\GX2CMS();
+                $emailMessage = $ezpzTmpl->compile(new GX2CMS\TemplateEngine\Model\Context($this->data), new GX2CMS\TemplateEngine\Model\Tmpl($message));
+            }
+            else if ($this->templatingEngine === 'handlebars') {
+                $emailMessage = Hbs::render($message, $this->data);
+            }
 
-        if (empty($subject))
-        {
-            CustomResponse::render(500, "Mail subject is missing");
-        }
+            $this->envelop->from($from[self::KEY_FROM_ADDRESS], isset($from[self::KEY_FROM_NAME])?$from[self::KEY_FROM_NAME]:'', true);
+            if (isset($to[0]) && isset($to[0][self::KEY_TO_EMAIL])) {
+                foreach ($to as $toEmail) {
+                    $this->envelop->to($toEmail[self::KEY_TO_EMAIL], $toEmail[self::KEY_TO_NAME]);
+                }
+            }
+            else if (isset($to[self::KEY_TO_EMAIL])) {
+                $this->envelop->to($to[self::KEY_TO_EMAIL], $to[self::KEY_TO_NAME]);
+            }
+            $this->envelop->subject($subject);
+            $this->envelop->message($emailMessage);
 
-        if ($this->gx2cmsTmpl) {
-            $ezpzTmpl = new GX2CMS();
-            $emailMessage = $ezpzTmpl->compile(new Context($data), new Tmpl($tpl));
+            if ($this->opensslPkcs7Encrypt && $this->sslKey && $this->sslCertificate && $this->sslCertChain)
+            {
+                $this->envelop->sign($this->sslCertificate, $this->sslKey, $this->privateKeyPassword, $this->sslCertChain);
+            }
         }
-        else if (!is_file($tpl) && !is_dir($tpl)) {
-            $emailMessage = $tpl;
-        }
-        else {
-            $emailMessage = '';
-            CustomResponse::render(500, "Invalid tpl value. With this condition, it cannot be file or directory.");
-        }
-
-        $this->envelop = new Envelop(null);
-        $this->envelop->from((string)$from->get(self::KEY_FROM_ADDRESS), (string)$from->get(self::KEY_FROM_NAME));
-        $this->envelop->to((string)$to->get(self::KEY_TO_EMAIL), (string)$to->get(self::KEY_TO_NAME));
-        $this->envelop->subject($subject);
-        $this->envelop->message($emailMessage);
     }
 
     public function deliver() {return $this->envelop instanceof Envelop ? $this->envelop->deliver() : false;}

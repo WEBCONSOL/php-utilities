@@ -15,6 +15,10 @@ class Logger
     public static function error($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_ERROR')) {
             $calledIn = self::generateCallTrace(1);
+            if (!is_string($message)) {
+                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
+                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
+            }
             self::log(($calledIn?$calledIn.' - ':'').'[error] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -22,6 +26,10 @@ class Logger
     public static function debug($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_DEBUG')) {
             $calledIn = self::generateCallTrace(1);
+            if (!is_string($message)) {
+                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
+                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
+            }
             self::log(($calledIn?$calledIn.' - ':'').'[debug] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -29,6 +37,10 @@ class Logger
     public static function info($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_INFO')) {
             $calledIn = self::generateCallTrace(1);
+            if (!is_string($message)) {
+                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
+                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
+            }
             self::log(($calledIn?$calledIn.' - ':'').'[info] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -36,6 +48,10 @@ class Logger
     public static function warning($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_WARNING')) {
             $calledIn = self::generateCallTrace(1);
+            if (!is_string($message)) {
+                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
+                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
+            }
             self::log(($calledIn?$calledIn.' - ':'').'[warning] '.$message, $message_type, $destination, $extra_headers);
         }
     }
