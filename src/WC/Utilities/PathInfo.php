@@ -26,6 +26,7 @@ class PathInfo
     private $port = '80';
     private $pathSfx = '';
     private $allowedExtensions = array('php', 'html', 'htm');
+    private $selectorsToParams = null;
 
     public function __construct(string $q='')
     {
@@ -42,7 +43,7 @@ class PathInfo
             $this->port = $_SERVER['SERVER_PORT'];
         }
         else {
-            if (StringUtil::startsWith($q, $this->https) || StringUtil::startsWith($q, $this->http)) {
+            if ($this->isExternal($q)) {
                 if (StringUtil::startsWith($q, $this->https)) {
                     $this->schema = $this->https;
                 }
@@ -137,6 +138,30 @@ class PathInfo
     public function getFullUrl(): string {return $this->schema.$this->host.'/'.$this->uri.($this->queryString?'?'.$this->queryString:'');}
     public function isHttps(): bool {return $this->schema === $this->https;}
     public function getPathSuffix(): string {return $this->pathSfx;}
+    public function getSelectorsAsParams(): ListModel {
+        if ($this->selectorsToParams === null) {
+            $selectorsToParams = [];
+            if ($this->selectors->hasElement()) {
+                foreach ($this->selectors->getAsArray() as $selector) {
+                    $arr = explode(':', $selector);
+                    if (sizeof($arr) > 2) {
+                        $selectorsToParams[$arr[0]] = [];
+                        for ($j = 1; $j < sizeof($arr); $j++) {
+                            $selectorsToParams[$arr[0]][] = $arr[$j];
+                        }
+                    }
+                    else if (sizeof($arr) > 1) {
+                        $selectorsToParams[$arr[0]] = $arr[1];
+                    }
+                    else {
+                        $selectorsToParams[$arr[0]] = '';
+                    }
+                }
+            }
+            $this->selectorsToParams = new ListModel($selectorsToParams);
+        }
+        return $this->selectorsToParams;
+    }
 
     public function setMinify(bool $flag) {$this->minify=$flag;}
 
@@ -144,6 +169,7 @@ class PathInfo
         return [
             'uri' => $this->uri,
             'selectors' => $this->getSelectors()->getAsArray(),
+            'selectorsAsParams' => $this->getSelectorsAsParams(),
             'parts' => $this->getParts()->getAsArray(),
             'numSegments' => $this->getNumSegments(),
             'nodeName' => $this->nodeName,
@@ -163,4 +189,6 @@ class PathInfo
             'pathSfx' => $this->getPathSuffix()
         ];
     }
+
+    private function isExternal($q) {return StringUtil::startsWith($q, $this->https) || StringUtil::startsWith($q, $this->http);}
 }

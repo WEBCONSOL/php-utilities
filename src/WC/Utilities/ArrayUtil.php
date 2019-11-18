@@ -89,4 +89,20 @@ class ArrayUtil
         }
         return $value;
     }
+
+    public static function jsonDecode(array &$arr) {
+        if (!empty($arr)) {
+            foreach ($arr as $i=>$v) {
+                if ($v) {
+                    if (is_array($v)) {
+                        self::jsonDecode($arr[$i]);
+                    }
+                    else if (!is_numeric($v) && EncodingUtil::isValidJSON($v)) {
+                        $arr[$i] = json_decode($v, true);
+                        self::jsonDecode($arr[$i]);
+                    }
+                }
+            }
+        }
+    }
 }

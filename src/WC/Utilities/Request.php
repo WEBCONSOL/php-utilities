@@ -4,24 +4,16 @@ namespace WC\Utilities;
 
 class Request
 {
-    protected $sanitizeTheData = true;
     protected $formName = '';
-    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a>';
+    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a><h1><h2><h3><h4><h5><img>';
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
     private $allowedContentType = array('application/json','application/json; charset=utf-8','application/x-www-form-urlencoded','application/x-www-form-urlencoded; charset=utf-8','multipart/form-data-encoded','multipart/form-data');
     private $allowedMethods = array('GET','PUT','DELETE','POST');
-    private $files = [];
 
     public function __construct(array $config=array())
     {
-        if (isset($config['sanitizeTheData']) && is_bool($config['sanitizeTheData'])) {
-            $this->sanitizeTheData = $config['sanitizeTheData'];
-        }
-        if (isset($config['allowedTags'])) {
-            $this->allowedTags = is_array($config['allowedTags'])?implode('',$config['allowedTags']):$config['allowedTags'];
-        }
         if (self::$data === null)
         {
             $this->cloudflareSSL();
@@ -38,7 +30,6 @@ class Request
             self::$data['pathInfo'] = new PathInfo($_SERVER["REQUEST_URI"]);
             $this->loadGlobals();
         }
-        $this->files = isset($_FILES) ? $_FILES : [];
     }
 
     private function cloudflareSSL() {
@@ -51,7 +42,19 @@ class Request
         }
     }
 
-    protected function getParam(string $key) {$v = $this->getRequestParam($key);if (!$v) {$v = $this->getHeaderParam($key);}return $v;}
+    protected function getParam(string $key) {
+        $v = "";
+        if ($this->hasRequestParam($key)) {
+            $v = $this->getRequestParam($key);
+        }
+        else if ($this->hasHeaderParam($key)) {
+            $v = $this->getHeaderParam($key);
+        }
+        if (!empty($v) && EncodingUtil::isValidJSON($v)) {
+            $v = json_decode($v, true);
+        }
+        return $v;
+    }
 
     protected function getParamKeys(): array {return array_keys(self::$data['params']);}
 
@@ -61,11 +64,11 @@ class Request
 
     public static function loadInstance(array $config=array()) {new Request($config);}
 
-    public function hasFiles(): bool {return !empty($this->files);}
+    public function hasFiles(): bool {return !empty(self::$data['files']);}
 
-    public function getFiles($form=''): array {return $form && isset($this->files[$form]) ? $this->files[$form] : $this->files;}
+    public function getFiles($form=''): array {return $form&&isset(self::$data['files'][$form])?self::$data['files'][$form]:self::$data['files'];}
 
-    public function setFiles(array $files) {$this->files = $files;}
+    public function setFiles(array $files) {self::$data['files'] = $files;}
 
     private function loadGlobals() {
 
@@ -130,10 +133,10 @@ class Request
 
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
 
-        if ($this->sanitizeTheData) {
-            $this->sanitizeHeaderData(self::$data['header']);
-            $this->sanitizeParams(self::$data['params']);
-        }
+        self::$data['files'] = isset($_FILES) ? $_FILES : [];
+
+        $this->sanitizeHeaderData(self::$data['header']);
+        $this->sanitizeParams(self::$data['params']);
     }
 
     private function sanitizeHeaderData(array &$data) {
@@ -199,7 +202,15 @@ class Request
     public function hasHeaderParam($key): bool {  return isset(self::$data['header'])&&isset(self::$data['header'][$key]); }
 
     public function getHeaderParam($param, $default = ''): string {
-        if ($this->hasHeaderParam($param)) {
+        if ($this->hasHeaderParam(strtolower($param))) {
+            $val = self::$data['header'][strtolower($param)];
+            return is_string($val) ? rawurldecode($val) : json_encode($val);
+        }
+        else if ($this->hasHeaderParam(strtoupper($param))) {
+            $val = self::$data['header'][strtoupper($param)];
+            return is_string($val) ? rawurldecode($val) : json_encode($val);
+        }
+        else if ($this->hasHeaderParam($param)) {
             $val = self::$data['header'][$param];
             return is_string($val) ? rawurldecode($val) : json_encode($val);
         }

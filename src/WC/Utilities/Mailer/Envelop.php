@@ -10,11 +10,12 @@ use WC\Utilities\Logger;
 final class Envelop
 {
     private $mailer = null;
+    private $isHTML = false;
 
-    public function __construct($mailConfig)
+    public function __construct($mailConfig, bool $isHTML=false)
     {
         $this->mailer = new PHPMailer();
-        $this->mailer->isHTML(true);
+        $this->isHTML = $isHTML;
 
         if ($mailConfig instanceof SMTP && $mailConfig->hasElement())
         {
@@ -29,7 +30,17 @@ final class Envelop
         }
     }
 
-    public function from(string $addr, string $name, $asReplyTo=false) {
+    public function sign(string $sslCertificateFile, string $sslKeyFile, string $privateKeyPassword, string $sslCertChainFile='') {
+        $this->mailer->sign(
+            $sslCertificateFile,
+            $sslKeyFile,
+            $privateKeyPassword,
+            $sslCertChainFile
+        );
+    }
+
+    public function from(string $addr, string $name, $asReplyTo=false)
+    {
         try {
             $this->mailer->setFrom($addr, $name);
             if ($asReplyTo) {
@@ -41,12 +52,18 @@ final class Envelop
         }
     }
 
-    public function to(string $addr, string $name) {$this->mailer->addAddress($addr, $name);}
+    public function to(string $addr, string $name='') {$this->mailer->addAddress($addr, $name);}
 
     public function subject(string $subject) {$this->mailer->Subject = $subject;}
 
-    public function message(string $message) {
-        $this->mailer->Body = $message;
+    public function message(string $message)
+    {
+        if ($this->isHTML) {
+            $this->mailer->msgHTML($message);
+        }
+        else {
+            $this->mailer->Body = $message;
+        }
         $this->mailer->AltBody = strip_tags($message);
     }
 
@@ -56,7 +73,8 @@ final class Envelop
 
     public function addBCC(string $addr, string $name) {$this->mailer->addBCC($addr, $name);}
 
-    public function addAttachment(string $addr, string $name) {
+    public function addAttachment(string $addr, string $name)
+    {
         try {
             $this->mailer->addAttachment($addr, $name);
         }

@@ -115,16 +115,19 @@ class StringUtil
     public static function isHttps($uri): bool {return self::startsWith($uri, "https://");}
 
     public static function isRegExp($str): bool {
-        $newStr = '/' . addcslashes($str, "/\n\t\r") . '/';
-        if (@preg_match($newStr, '') !== false) {
-            if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
-             strpos($newStr, '*')!==false) {
-                return true;
-            }
-            if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
-                return true;
+        try {
+            $newStr = '/' . addcslashes($str, "/\n\t\r") . '/';
+            if (@preg_match($newStr, '') !== false) {
+                if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
+                    strpos($newStr, '*')!==false) {
+                    return true;
+                }
+                if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
+                    return true;
+                }
             }
         }
+        catch (\Exception $e) {}
         return false;
     }
 
@@ -158,9 +161,23 @@ class StringUtil
 
     public static function cleanCommaSeparatedIds(string $ids): array {
         $ids = explode(',', $ids);
+        $newIds = [];
         foreach ($ids as $i=>$id) {
-            $ids[$i] = (int)strip_tags($id);
+            if ($id) {
+                $newIds[] = (int)strip_tags($id);
+            }
         }
-        return $ids;
+        return $newIds;
+    }
+
+    public static function cleanCommaSeparatedString(string $ids): array {
+        $ids = explode(',', $ids);
+        $newIds = [];
+        foreach ($ids as $i=>$id) {
+            if ($id) {
+                $newIds[] = strip_tags($id);
+            }
+        }
+        return $newIds;
     }
 }

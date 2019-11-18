@@ -9,8 +9,8 @@ class EncodingUtil
     public static function isValidJSON($str): bool {
         if (is_string($str) && $str) {
             $str = trim($str);
-            $first = $str[0];
-            $last = $str[strlen($str) - 1];
+            $first = $str ? $str[0] : '';
+            $last = $str ? $str[strlen($str) - 1] : '';
             if (($first === "{" && $last === "}") || ($first === "[" && $last === "]")) {
                 if (is_string($str) && is_array(json_decode($str, true)) && (json_last_error() == JSON_ERROR_NONE)) {
                     return true;

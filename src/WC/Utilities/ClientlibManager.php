@@ -17,15 +17,15 @@ class ClientlibManager
     private $lessVars = array();
     private $sassVars = array();
     private $assetDir = '';
+    private $patterns = null;
+    private $replaces = null;
 
     public function __construct(string $root, string $q, array $vars=array(), bool $isMinify=false)
     {
         $parts = explode('/', $root);
         $this->assetDir = '/'.$parts[sizeof($parts)-1] . '/' . pathinfo($q, PATHINFO_FILENAME);
 
-        if (!defined('DS')) {
-            define('DS', DIRECTORY_SEPARATOR);
-        }
+        defined('DS') or define('DS', DIRECTORY_SEPARATOR);
         $this->lessVars = isset($vars['less']) && is_array($vars['less']) ? $vars['less'] : array();
         $this->sassVars = isset($vars['sass']) && is_array($vars['sass']) ? $vars['sass'] : array();
         $this->root = $root;
@@ -55,7 +55,37 @@ class ClientlibManager
         }
     }
 
+    public static function renderHBSTemplates(string $root, string $q, string $format, array &$buffer, string $parent='') {
+        $pattern = $root.$q.'/*';
+        $list = glob($pattern);
+        if (!empty($list)) {
+            foreach ($list as $item) {
+                $name = pathinfo($item, PATHINFO_FILENAME);
+                if (is_dir($item)) {
+                    self::renderHBSTemplates($item, '', $format, $buffer, $name);
+                }
+                else if (pathinfo($item, PATHINFO_EXTENSION) === 'hbs') {
+                    $buffer[] = sprintf($format, ($parent?$parent.'-':'').$name, base64_encode(file_get_contents($item)));
+                }
+            }
+        }
+    }
+
+    public function setPatterns($p) {$this->patterns=$p;}
+    public function setReplaces($r) {$this->replaces=$r;}
+
     public function getContent(): string {return $this->content;}
+
+    public function isMinify(): bool {return $this->pathInfo->isMinify();}
+    public function isStyle(): bool {return $this->isStyle;}
+    public function isScript(): bool {return $this->isScript;}
+    public function isJSON(): bool {return $this->isJSON;}
+    public function getContentTypeHeader(): string {
+        if ($this->isStyle()) {return 'text/css; charset=utf-8';}
+        else if ($this->isScript()) {return 'application/javascript; charset=utf-8';}
+        else if ($this->isJSON()) {return 'application/json; charset=utf-8';}
+        else {return "text/html; charset=utf-8";}
+    }
 
     public function setRenderHeaderContentType() {
         if ($this->isStyle) {
@@ -72,7 +102,11 @@ class ClientlibManager
     public function renderContent()
     {
         $this->setRenderHeaderContentType();
-        echo str_replace(['../fonts'], [$this->assetDir.'/fonts'], $this->content);
+        if ($this->patterns === null && $this->replaces === null) {
+            $this->patterns = ['../fonts'];
+            $this->replaces = [$this->assetDir.'/fonts'];
+        }
+        echo str_replace($this->patterns, $this->replaces, $this->content);
     }
 
     private function loadStatic()
