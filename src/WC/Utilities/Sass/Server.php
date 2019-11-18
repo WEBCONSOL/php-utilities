@@ -150,7 +150,7 @@ class Server {
     public function serve($salt = '') {
         $protocol = isset($_SERVER['SERVER_PROTOCOL'])
             ? $_SERVER['SERVER_PROTOCOL']
-            : 'HTTP/1.0';
+            : 'HTTP/2.0';
 
         if ($input = $this->findInput()) {
             $output = $this->cacheName($salt . $input);
