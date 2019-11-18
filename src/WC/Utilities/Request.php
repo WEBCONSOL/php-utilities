@@ -4,6 +4,7 @@ namespace WC\Utilities;
 
 class Request
 {
+    protected $sanitizeTheData = true;
     protected $formName = '';
     protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a>';
     private static $data = null;
@@ -15,6 +16,12 @@ class Request
 
     public function __construct(array $config=array())
     {
+        if (isset($config['sanitizeTheData']) && is_bool($config['sanitizeTheData'])) {
+            $this->sanitizeTheData = $config['sanitizeTheData'];
+        }
+        if (isset($config['allowedTags'])) {
+            $this->allowedTags = is_array($config['allowedTags'])?implode('',$config['allowedTags']):$config['allowedTags'];
+        }
         if (self::$data === null)
         {
             $this->cloudflareSSL();
@@ -52,7 +59,7 @@ class Request
 
     protected final function get(string $key) {return isset(self::$data[$key]) ? self::$data[$key] : null;}
 
-    public static function loadInstance() {new Request();}
+    public static function loadInstance(array $config=array()) {new Request($config);}
 
     public function hasFiles(): bool {return !empty($this->files);}
 
@@ -123,8 +130,10 @@ class Request
 
         self::$data['params'] = array_merge(self::$data['params'], self::$data['postData'], self::$data['deleteData']);
 
-        $this->sanitizeHeaderData(self::$data['header']);
-        $this->sanitizeParams(self::$data['params']);
+        if ($this->sanitizeTheData) {
+            $this->sanitizeHeaderData(self::$data['header']);
+            $this->sanitizeParams(self::$data['params']);
+        }
     }
 
     private function sanitizeHeaderData(array &$data) {
