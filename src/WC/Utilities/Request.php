@@ -11,7 +11,6 @@ class Request
     private $schema_https = "https://";
     private $allowedContentType = array('application/json','application/json; charset=utf-8','application/x-www-form-urlencoded','application/x-www-form-urlencoded; charset=utf-8','multipart/form-data-encoded','multipart/form-data');
     private $allowedMethods = array('GET','PUT','DELETE','POST');
-    private $files = [];
 
     public function __construct(array $config=array())
     {
@@ -44,11 +43,14 @@ class Request
     }
 
     protected function getParam(string $key) {
-        $v = $this->getRequestParam($key);
-        if (!$v) {
+        $v = "";
+        if ($this->hasRequestParam($key)) {
+            $v = $this->getRequestParam($key);
+        }
+        else if ($this->hasHeaderParam($key)) {
             $v = $this->getHeaderParam($key);
         }
-        if (EncodingUtil::isValidJSON($v)) {
+        if (!empty($v) && EncodingUtil::isValidJSON($v)) {
             $v = json_decode($v, true);
         }
         return $v;
@@ -60,7 +62,7 @@ class Request
 
     protected final function get(string $key) {return isset(self::$data[$key]) ? self::$data[$key] : null;}
 
-    public static function loadInstance() {new Request();}
+    public static function loadInstance(array $config=array()) {new Request($config);}
 
     public function hasFiles(): bool {return !empty(self::$data['files']);}
 
