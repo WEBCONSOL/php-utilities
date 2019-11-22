@@ -34,7 +34,7 @@ class DigitalAssetRenderer
                     $adapter = new \League\Flysystem\Adapter\Local($this->root);
                     $fileSystem = new \League\Flysystem\Filesystem($adapter);
                     try {
-                        header('HTTP/1.1 200 OK');
+                        header('HTTP/2.0 200 OK');
                         header('Content-Type: '.$mimeType);
                         header('Content-disposition: attachment; filename="'.md5($this->requestFile).'.'.pathinfo($file, PATHINFO_EXTENSION).'"');
                         header('Content-Length: ' . $fileSystem->getSize($this->requestFile));
