@@ -6,6 +6,7 @@ class Request
 {
     protected $formName = '';
     protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a><h1><h2><h3><h4><h5><img>';
+    protected static $skipSanitize = false;
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
@@ -135,8 +136,10 @@ class Request
 
         self::$data['files'] = isset($_FILES) ? $_FILES : [];
 
-        $this->sanitizeHeaderData(self::$data['header']);
-        $this->sanitizeParams(self::$data['params']);
+        if (self::$skipSanitize === false) {
+            $this->sanitizeHeaderData(self::$data['header']);
+            $this->sanitizeParams(self::$data['params']);
+        }
     }
 
     private function sanitizeHeaderData(array &$data) {
