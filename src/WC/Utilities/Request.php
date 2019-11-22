@@ -6,15 +6,17 @@ class Request
 {
     protected $formName = '';
     protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a><h1><h2><h3><h4><h5><img>';
-    protected static $skipSanitize = false;
+    protected $opts = array();
     private static $data = null;
     private $schema_http = "http://";
     private $schema_https = "https://";
     private $allowedContentType = array('application/json','application/json; charset=utf-8','application/x-www-form-urlencoded','application/x-www-form-urlencoded; charset=utf-8','multipart/form-data-encoded','multipart/form-data');
     private $allowedMethods = array('GET','PUT','DELETE','POST');
 
-    public function __construct(array $config=array())
+    public function __construct(array $opts=array())
     {
+        $this->opts = $opts;
+
         if (self::$data === null)
         {
             $this->cloudflareSSL();
@@ -136,7 +138,7 @@ class Request
 
         self::$data['files'] = isset($_FILES) ? $_FILES : [];
 
-        if (self::$skipSanitize === false) {
+        if (!isset($this->opts['skipSanitize']) || (isset($this->opts['skipSanitize']) && $this->opts['skipSanitize'] === false)) {
             $this->sanitizeHeaderData(self::$data['header']);
             $this->sanitizeParams(self::$data['params']);
         }
