@@ -116,15 +116,19 @@ class StringUtil
 
     public static function isRegExp($str): bool {
         try {
+            if (@preg_match($str, '') !== FALSE) {
+                return true;
+            }
             $newStr = '/' . addcslashes($str, "/\n\t\r") . '/';
             if (@preg_match($newStr, '') !== false) {
-                if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
-                    strpos($newStr, '*')!==false) {
-                    return true;
-                }
-                if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
-                    return true;
-                }
+                return true;
+            }
+            if (strpos($newStr, '(')!==false && strpos($newStr, ')')!==false && strpos($newStr, '.')!==false &&
+                strpos($newStr, '*')!==false) {
+                return true;
+            }
+            if (strpos($newStr, '[')!==false && strpos($newStr, ']')!==false) {
+                return true;
             }
         }
         catch (\Exception $e) {}
