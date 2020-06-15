@@ -24,7 +24,8 @@ class CustomResponse
         else {
             $output = json_decode(file_get_contents(__DIR__ . '/data/500.json'), true);
         }
-        $output['status'] = $code === 200;
+        $output['status'] = $code === 200 ? 'OK' : 'Error';
+        $output['code'] = $code;
         $output['statusCode'] = $code;
         if ($msg) {
             $output['message'] = $msg;
