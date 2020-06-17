@@ -12,7 +12,7 @@ class CustomResponse
 
     public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string {
         header('Content-Type: application/json; charset=utf-8');
-        //http_response_code($code);
+        http_response_code($code);
         die(self::getOutputFormattedAsString($data, $code, $msg));
     }
 
@@ -42,12 +42,14 @@ class CustomResponse
 
     public static function renderJSONString(string $data) {
         header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
         die($data);
     }
 
     public static function renderPlaintext(string $data) {
         header('Content-Type: text/html; charset=utf-8');
+        http_response_code(500);
         die($data);
     }
 }
