@@ -48,8 +48,10 @@ class CustomErrorHandler
             else if (isset($e['message'])) {
                 $message = 'Exception: ' . $e['message'] . '; file: ' . $e['file'] . '; line: ' . $e['line'];
             }
-            Logger::error($message);
-            CustomResponse::render(500, $message);
+            if ($message) {
+                Logger::error($message);
+                CustomResponse::render(500, $message);
+            }
         }
     }
 
