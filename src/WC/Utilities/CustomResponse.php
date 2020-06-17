@@ -24,12 +24,11 @@ class CustomResponse
         else {
             $output = json_decode(file_get_contents(__DIR__ . '/data/500.json'), true);
         }
-        $output['status'] = $code === 200;
-        $output['statusCode'] = $code;
+        $output['status'] = $code === 200 ? 'OK' : 'ERROR';
+        $output['code'] = $code;
         if ($msg) {
             $output['message'] = $msg;
         }
-
         $output['data'] = !empty($data) ? $data : null;
         if (self::$debug) {
             $output['debug'] = debug_backtrace();
