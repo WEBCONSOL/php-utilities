@@ -5,8 +5,10 @@ namespace WC\Utilities;
 class CustomResponse
 {
     private static $debug = false;
+    private static $debugInfo = null;
 
     public static function setDebug(bool $debug) {self::$debug = $debug;}
+    public static function setDebugInfo($debug) {self::$debugInfo = $debug;}
 
     public static function getDebug(): bool {return self::$debug;}
 
@@ -31,7 +33,12 @@ class CustomResponse
         }
         $output['data'] = !empty($data) ? $data : null;
         if (self::$debug) {
-            $output['debug'] = debug_backtrace();
+            if (self::$debugInfo !== null) {
+                $output['debug'] = self::$debugInfo;
+            }
+            else {
+                $output['debug'] = debug_backtrace();
+            }
         }
         return $output;
     }
