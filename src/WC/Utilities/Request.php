@@ -247,6 +247,14 @@ class Request
 
     public function getReferrer(): string {return self::$data['referer'];}
 
+    public function getReferredHost(): string {
+        if (self::$data['referer']) {
+            $arr = explode('/', self::$data['referer']);
+            return $arr[0].'/'.$arr[1].'/'.$arr[2];
+        }
+        return '';
+    }
+
     public function parseRawHttpRequest(array &$a_data)
     {
         // read incoming data
