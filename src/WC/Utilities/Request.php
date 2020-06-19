@@ -222,6 +222,11 @@ class Request
         return $default;
     }
 
+    public function getBearerToken(): string {
+        $v = $this->getHeaderParam('Authorization');
+        return !empty($v) ? str_replace('Bearer ', '', $v) : $v;
+    }
+
     public function hasHeaderAuthorization(): bool {return sizeof($this->getCredentials());}
 
     public function getCredentials(): array {
