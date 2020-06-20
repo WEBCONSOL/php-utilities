@@ -9,8 +9,9 @@ class CustomResponse
 
     public static function setDebug(bool $debug) {self::$debug = $debug;}
     public static function setDebugInfo($debug) {self::$debugInfo = $debug;}
+    public static function getDebugInfo() {return self::$debugInfo;}
 
-    public static function getDebug(): bool {return self::$debug;}
+    public static function getDebug(): bool {return (self::$debug || (defined('DEBUG') && DEBUG === true));}
 
     public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string {
         header('Content-Type: application/json; charset=utf-8');
@@ -31,14 +32,13 @@ class CustomResponse
         if ($msg) {
             $output['message'] = $msg;
         }
-        $output['data'] = !empty($data) ? $data : null;
-        if (self::$debug) {
+        $output['data'] = !empty($data) ? $data : (self::getDebug()?[]:null);
+        if (self::getDebug()) {
+            $output['data']['debug'] = [];
             if (self::$debugInfo !== null) {
-                $output['debug'] = self::$debugInfo;
+                $output['data']['custom_debug'] = self::$debugInfo;
             }
-            else {
-                $output['debug'] = debug_backtrace();
-            }
+            $output['data']['debug_backtrace'] = self::debugBacktrace();
         }
         return $output;
     }
@@ -51,12 +51,28 @@ class CustomResponse
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
-        die($data);
+        die(json_encode($data));
     }
 
     public static function renderPlaintext(string $data) {
         header('Content-Type: text/html; charset=utf-8');
         http_response_code(500);
         die($data);
+    }
+
+    public static function debugBacktrace(): array
+    {
+        $d1 = debug_backtrace();
+        $d2 = [];
+        foreach($d1 as $i=>$t) {
+            $d2[$i] = [];
+            if (isset($t['file'])) {$d2[$i]['file'] = $t['file'];}
+            if (isset($t['line'])) {$d2[$i]['line'] = $t['line'];}
+            if (isset($t['function'])) {$d2[$i]['function'] = $t['function'];}
+            if (isset($t['class'])) {$d2[$i]['class'] = $t['class'];}
+            //if (isset($t['object'])) {$d2[$i]['object'] = $t['object'];}
+            //if (isset($t['type'])) {$d2[$i]['type'] = $t['type'];}
+        }
+        return $d2;
     }
 }

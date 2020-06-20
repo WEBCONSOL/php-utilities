@@ -20,7 +20,7 @@ class CustomErrorHandler
             self::setDisplayed(true);
             $message = 'Error: ' . $errStr . '; file: ' . $errFile . '; line: ' . $errLine;
             Logger::error($message);
-            CustomResponse::render($errCode, $message);
+            CustomResponse::render($errCode, $message, false);
         }
     }
 
@@ -31,7 +31,7 @@ class CustomErrorHandler
             if ($e instanceof \Error || $e instanceof \Exception) {
                 $message = 'Exception: ' . $e->getMessage() . '; file: ' . $e->getFile() . '; line: ' . $e->getLine();
                 Logger::error($message);
-                CustomResponse::render($e->getCode(), $message);
+                CustomResponse::render(500, $message, false);
             }
         }
     }
@@ -50,12 +50,10 @@ class CustomErrorHandler
             }
             if ($message) {
                 Logger::error($message);
-                CustomResponse::render(500, $message);
+                CustomResponse::render(500, $message, false);
             }
         }
     }
 
-    public static final function setDisplayed(bool $displayed) {
-        self::$displayed = $displayed;
-    }
+    public static final function setDisplayed(bool $displayed) {self::$displayed = $displayed;}
 }

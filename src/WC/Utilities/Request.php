@@ -225,22 +225,29 @@ class Request
     public function hasHeaderAuthorization(): bool {return sizeof($this->getCredentials());}
 
     public function getCredentials(): array {
-        $authorization = $this->getHeaderParam('Authorization');
-        if ($authorization) {
-            $authorization = str_replace(array('Basic ','Digest '), '', $authorization);
-            if (EncodingUtil::isBase64Encoded($authorization)) {
-                $authorization = explode(':', base64_decode($authorization));
-                if (sizeof($authorization) === 2) {
-                    return array('username' => $authorization[0], 'password' => $authorization[1]);
+        $credentials = array('username' => '', 'password' => '');
+        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+            $credentials['username'] = $_SERVER['PHP_AUTH_USER'];
+            $credentials['password'] = $_SERVER['PHP_AUTH_PW'];
+        }
+        else {
+            $authorization = $this->getHeaderParam('Authorization');
+            if ($authorization) {
+                $authorization = str_replace(array('Basic ','Digest '), '', $authorization);
+                if (EncodingUtil::isBase64Encoded($authorization)) {
+                    $authorization = explode(':', base64_decode($authorization));
+                    if (sizeof($authorization) === 2) {
+                        $credentials['username'] = $authorization[0];
+                        $credentials['password'] = $authorization[1];
+                    }
                 }
             }
+            else {
+                $credentials['username'] = $this->getRequestParam('username', '');
+                $credentials['password'] = $this->getRequestParam('password', '');
+            }
         }
-        $username = $this->getRequestParam('username');
-        $password = $this->getRequestParam('password');
-        if ($username && $password) {
-            return array('username' => $username, 'password' => $password);
-        }
-        return array();
+        return $credentials;
     }
 
     public function uri() {return self::pathInfo()->getUri();}
