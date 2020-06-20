@@ -1,6 +1,6 @@
 {
   "status": "OK",
   "code": 200,
-  "data": null,
-  "message": "Success"
+  "message": "SUCCESS",
+  "data": null
 }

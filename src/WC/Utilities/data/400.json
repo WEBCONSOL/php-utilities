@@ -1,6 +1,6 @@
 {
   "status": "ERROR",
   "code": 400,
-  "data": null,
-  "message": "Invalid request"
+  "message": "INVALID_REQUEST",
+  "data": null
 }
