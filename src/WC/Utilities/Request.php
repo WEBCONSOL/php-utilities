@@ -26,7 +26,7 @@ class Request
             self::$data['postData'] = array();
             self::$data['deleteData'] = array();
             self::$data['isHttps'] = (int)$_SERVER['SERVER_PORT']===443||(isset($_SERVER['HTTP_X_FORWARDED_PROTO'])&&$_SERVER['HTTP_X_FORWARDED_PROTO']==="https")||isset($_SERVER['HTTP_X_FORWARDED_SSL'])||isset($_SERVER['HTTPS'])?true:false;
-            self::$data['host'] = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : '';
+            self::$data['host'] = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '');
             self::$data['method'] = strtoupper($_SERVER["REQUEST_METHOD"]);
             self::$data['isAjax'] = isset($_SERVER['HTTP_X_REQUESTED_WITH']) ? strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' : false;;
             self::$data['referer'] = isset($_SERVER["HTTP_REFERER"]) ? $_SERVER["HTTP_REFERER"] : "";
@@ -180,7 +180,7 @@ class Request
 
     public function getUrl(): string {return $this->protocol() . $this->host() . '/' . ltrim($this->uri(), '/');}
 
-    public function host(): string {return self::$data['host'];}
+    public function host(): string {return self::getHost();}
 
     public function originHost(): string {return $this->getHeaderParam('Origin');}
 
@@ -331,11 +331,18 @@ class Request
 
     public function pathInfo(): PathInfo {return self::$data['pathInfo'];}
 
+    public static function getHost(): string {
+        if (!isset(self::$data['host'])) {
+            self::$data['host'] = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '');
+        }
+        return self::$data['host'];
+    }
+
     public static function isTheSameOrigin(string $referer=''): bool {
         if (!$referer) {
             $referer = !empty($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
         }
-        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+        $host = self::getHost();
         if ($referer && $host) {
             $parts = explode('/', $referer);
             return isset($parts[2]) && $parts[2] === $host;
