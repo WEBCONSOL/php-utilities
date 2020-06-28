@@ -15,7 +15,7 @@ final class NestedTree
      */
     private $table;
 
-    private $referenceId = 0;
+    private $referenceId = 0; // ordering_item
     private $orderingPosition = '';
     private $parentId = 0;
     private $editId = 0;
@@ -58,7 +58,7 @@ final class NestedTree
 
     public function delete(int $id): bool {
         $queries = array();
-        $queries[] = 'LOCK TABLE ' . $this->table . ' WRITE;';
+        $queries[] = 'LOCK TABLES ' . $this->table . ' WRITE;';
         $queries[] = 'SELECT @myLeft := lft, @myRight := rgt, @myWidth := rgt - lft + 1 FROM ' . $this->table . ' WHERE id = ' . $id . ';';
         $queries[] = 'DELETE FROM ' . $this->table . ' WHERE lft BETWEEN @myLeft AND @myRight;';
         $queries[] = 'UPDATE ' . $this->table . ' SET rgt = rgt - @myWidth WHERE rgt > @myRight;';
@@ -70,9 +70,9 @@ final class NestedTree
 
     public function store(int $parentId, int $editId, string $title, int $referenceId, string $orderingPosition, array $updateQuery, array $insertFields, array $insertValues) {
 
-        $this->parentId = $parentId;
+        $this->parentId = $parentId === 0 ? 1 : $parentId;
         $this->editId = $editId;
-        $this->referenceId = $referenceId;
+        $this->referenceId = $referenceId; // ordering_item
         $this->orderingPosition = $orderingPosition ? $orderingPosition : 'after';
         $this->updateStatementList = $updateQuery;
         $this->insertFieldList = $insertFields;
@@ -89,7 +89,7 @@ final class NestedTree
             $this->insertFieldList[] = 'rgt';
             $this->insertValueList[] = '@myPosition+2';
 
-            $this->insertFieldList[] = 'level';
+            $this->insertFieldList[] = $this->dbo->quoteName('level');
             $this->insertValueList[] = $this->newNodeLevel;
 
             $this->insertFieldList[] = 'path';
@@ -100,13 +100,13 @@ final class NestedTree
             $this->insertFieldList[] = 'alias';
             $this->insertValueList[] = $this->dbo->quote($this->newNodeAlias);
 
-            $this->updateStatementList[] = 'level='.$this->dbo->quote($this->newNodeLevel);
+            $this->updateStatementList[] = $this->dbo->quoteName('level').'='.$this->dbo->quote($this->newNodeLevel);
             $this->updateStatementList[] = 'path='.$this->dbo->quote($this->newNodePath);
             $this->updateStatementList[] = 'path_md5='.$this->dbo->quote($this->pathMD5);
             $this->updateStatementList[] = 'alias='.$this->dbo->quote($this->newNodeAlias);
 
             $queries = $this->storeQueryStatements();
-
+            //die(implode("\n", $queries));
             if (sizeof($queries) > 0) {
                 $this->dbo->exec(implode("\n", $queries));
             }
@@ -121,7 +121,7 @@ final class NestedTree
         }
         else {
             $this->error = true;
-            $this->msg = 'ITEM_ALREADY_EXIST';
+            $this->msg = 'CATEGORY_ALREADY_EXIST';
         }
     }
 
@@ -181,20 +181,20 @@ final class NestedTree
     public function getEditId(): int {return $this->editId;}
 
     private function checkExistence(): bool {
-        $query = 'SELECT id FROM ' . $this->table . ' WHERE path_md5="' . $this->pathMD5 . '" AND id!=' . ($this->editId ? $this->editId : 0);
+        $query = 'SELECT id FROM ' . $this->table . ' WHERE path_md5="' . $this->pathMD5 . '"' . ($this->editId ? ' AND id!='.$this->editId : '');
         $row = $this->dbo->loadAssoc($query);
         $this->exists = !empty($row) && isset($row['id']);
         return $this->exists;
     }
 
     private function getChildren(int $id): array {
-        $query = 'SELECT id,path,alias,parent_id,lft,rgt,level FROM ' . $this->table . ' WHERE parent_id=' . $id . ' ORDER BY lft';
+        $query = 'SELECT id,path,alias,parent_id,lft,rgt,'.$this->dbo->quoteName('level').' FROM ' . $this->table . ' WHERE parent_id=' . $id . ' ORDER BY lft';
         return $this->dbo->loadAssocList($query);
     }
 
     private function getNode(int $id): array {
 
-        $query = 'SELECT id,path,alias,parent_id,lft,rgt,level FROM ' . $this->table . ' WHERE id='.$this->dbo->quote($id);
+        $query = 'SELECT id,path,alias,parent_id,lft,rgt,'.$this->dbo->quoteName('level').' FROM ' . $this->table . ' WHERE id='.$this->dbo->quote($id);
         $row = $this->dbo->loadAssoc($query);
 
         // Check for no $row returned
@@ -223,15 +223,15 @@ final class NestedTree
                     $length = sizeof($rows);
                     if ($length) {
                         foreach ($rows as $i=>$row) {
-                            if ($row['id'] == $this->referenceId) {
+                            if ((int)$row['id'] === $this->referenceId) {
                                 if ($i===0) {
                                     return $this->storeAddNodeQueryAsArray('first');
                                 }
                                 else if ($i===$length - 1) {
-                                    return $this->storeAddNodeQueryAsArray('last');
+                                    return $this->storeAddNodeQueryAsArray('after', $rows[$length - 2]['id']);
                                 }
                                 else {
-                                    return $this->storeAddNodeQueryAsArray('after', $rows[$i-1]->id);
+                                    return $this->storeAddNodeQueryAsArray('after', $rows[$i-1]['id']);
                                 }
                                 break;
                             }
@@ -241,7 +241,7 @@ final class NestedTree
 
                 // 1.1.2. after
                 else if ($this->orderingPosition === "after") {
-                    return $this->storeAddNodeQueryAsArray('after', $this->referenceId);
+                    return $this->storeAddNodeQueryAsArray($this->orderingPosition, $this->referenceId);
                 }
             }
 
@@ -305,7 +305,7 @@ final class NestedTree
 
         $row = $this->getNode($this->editId);
         $query = 'UPDATE ' . $this->table . ' SET '.
-            'path=CONCAT("'.$row['path'].'/",alias),path_md5=MD5(CONCAT("'.$row['path'].'/",alias)),level='.($this->newNodeLevel+1).' '.
+            'path=CONCAT("'.$row['path'].'/",alias),path_md5=MD5(CONCAT("'.$row['path'].'/",alias)),'.$this->dbo->quoteName('level').'='.($this->newNodeLevel+1).' '.
             'WHERE path LIKE "'.$this->nodePath.'/%" AND id!='.$this->dbo->quote($this->editId);
         $this->dbo->exec($query);
     }
@@ -367,7 +367,7 @@ final class NestedTree
             }
 
             // Lock the table for writing.
-            $queries[] = 'LOCK TABLE ' . $this->table . ' WRITE;';
+            $queries[] = 'LOCK TABLES ' . $this->table . ' WRITE;';
 
             // create new space for subtree
             $queries[] = 'UPDATE ' . $this->table . ' SET lft = lft + ' . $width . ' WHERE lft >= ' . $newPos . ';';
@@ -396,7 +396,7 @@ final class NestedTree
     private function storeMoveNodeAsLastChildNodeQueryAsArray(): array {
 
         $queries = array();
-        $queries[] = 'LOCK TABLE '.$this->table.' WRITE;';
+        $queries[] = 'LOCK TABLES '.$this->table.' WRITE;';
 
         // step 0: Initialize parameters.
         $queries[] = 'SELECT
@@ -445,8 +445,7 @@ final class NestedTree
     private function storeAddNodeQueryAsArray(string $position, int $nodeId = 0): array {
 
         $queries = array();
-
-        $queries[] = 'LOCK TABLE '.$this->table.' WRITE;';
+        $queries[] = 'LOCK TABLES '.$this->table.' WRITE;';
 
         if ($nodeId) {
             $queries[] = 'SELECT @myPosition := rgt FROM ' . $this->table . ' WHERE id=' . $nodeId . ';';
