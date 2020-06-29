@@ -125,7 +125,7 @@ final class NestedTree
         }
     }
 
-    public function branchQueryStatement(int $nodeId, int $ignoreBranch=0, int $depth=1): string {
+    public function branchQueryStatement(int $nodeId, int $ignoreBranch=0, int $depth=1, string $channel=''): string {
 
         $query = 'SELECT node.*, (COUNT(parent.name) - (sub_tree.depth + 1)) AS depth
         FROM '.$this->table.' AS node,
@@ -141,8 +141,10 @@ final class NestedTree
                         ORDER BY node.lft
                 ) AS sub_tree
         WHERE node.lft BETWEEN parent.lft AND parent.rgt
-                AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
-                AND sub_parent.id = sub_tree.id'.($ignoreBranch > 0 ? ' AND node.id != ' . $this->dbo->quote($ignoreBranch) : '').'
+            AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+            AND sub_parent.id = sub_tree.id'.
+            ($channel ? ' AND node.channel LIKE ' . $this->dbo->quote('%"'.$channel.'"%') : '').
+            ($ignoreBranch > 0 ? ' AND node.id != ' . $this->dbo->quote($ignoreBranch) : '').'
         GROUP BY node.id
         '.($depth?'HAVING depth <= ' . $depth : '').'
         ORDER BY node.lft'.($this->limit ? ' ' . $this->limit : '');
@@ -150,7 +152,7 @@ final class NestedTree
         return $query;
     }
 
-    public function treeQueryStatement(int $ignoreBranch=0): string {
+    public function treeQueryStatement(int $ignoreBranch=0, string $channel=''): string {
 
         if ($ignoreBranch) {
             $children = $this->getBranch($ignoreBranch, 0, 0);
@@ -166,8 +168,9 @@ final class NestedTree
         $query = 'SELECT node.*,(COUNT(parent.id) - 1) AS depth 
             FROM '.$this->table.' AS node,'.$this->table.' AS parent 
             WHERE (node.lft BETWEEN parent.lft AND parent.rgt) 
-            AND (node.rgt BETWEEN parent.lft AND parent.rgt) 
-            '.($ignoreBranch ? ' AND node.id NOT IN('.$ignoreBranch.')' : '').'
+            AND (node.rgt BETWEEN parent.lft AND parent.rgt)'.
+            ($channel ? ' AND node.channel LIKE '.$this->dbo->quote('%"'.$channel.'"%') : '').
+            ($ignoreBranch ? ' AND node.id NOT IN('.$ignoreBranch.')' : '').'
             GROUP BY node.id 
             ORDER BY node.lft'.($this->limit ? ' ' . $this->limit : '');
 
