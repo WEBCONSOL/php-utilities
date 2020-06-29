@@ -4,7 +4,8 @@ namespace WC\Utilities;
 
 class EncodingUtil
 {
-    private static $UUIDv4 = '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i';
+    private static $MD5_REGEX = '/^[a-f0-9]{32}$/';
+    private static $UUID_V4_REGEX = '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i';
 
     public static function isBase64Encoded($val): bool {
         return is_string($val) && base64_encode(base64_decode($val, true)) === $val;
@@ -15,12 +16,12 @@ class EncodingUtil
     }
 
     public static function isValidMd5($md5 =''): bool {
-        return preg_match('/^[a-f0-9]{32}$/', $md5) === 1;
+        return preg_match(self::$MD5_REGEX, $md5) === 1;
     }
 
     public static final function uuid(): string {return strtoupper(exec('uuidgen'));}
 
     public static final function isValidUUID(string $id): bool {
-        return preg_match(self::$UUIDv4, $id) === 1;
+        return preg_match(self::$UUID_V4_REGEX, $id) === 1;
     }
 }
