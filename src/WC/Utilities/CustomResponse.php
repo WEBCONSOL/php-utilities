@@ -34,7 +34,6 @@ class CustomResponse
         }
         $output['data'] = !empty($data) ? $data : (self::getDebug()?[]:null);
         if (self::getDebug()) {
-            $output['data']['debug'] = [];
             if (self::$debugInfo !== null) {
                 $output['data']['custom_debug'] = self::$debugInfo;
             }
