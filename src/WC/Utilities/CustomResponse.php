@@ -13,13 +13,15 @@ class CustomResponse
 
     public static function getDebug(): bool {return (self::$debug || (defined('DEBUG') && DEBUG === true));}
 
-    public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string {
+    public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string
+    {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
         die(self::getOutputFormattedAsString($data, $code, $msg));
     }
 
-    public static function getOutputFormattedAsArray(array $data=null, int $code=200, $msg=null, bool $status=true): array {
+    public static function getOutputFormattedAsArray(array $data=null, int $code=200, $msg=null, bool $status=true): array
+    {
         $file = __DIR__ . '/data/' . $code . '.json';
         if (file_exists($file)) {
             $output = json_decode(file_get_contents($file), true);
@@ -42,18 +44,21 @@ class CustomResponse
         return $output;
     }
 
-    public static function getOutputFormattedAsString(array $data=null, int $code=200, $msg=null): string{
+    public static function getOutputFormattedAsString(array $data=null, int $code=200, $msg=null): string
+    {
         return json_encode(self::getOutputFormattedAsArray($data, $code, $msg));
     }
 
-    public static function renderJSONString(string $data) {
+    public static function renderJSONString(string $data)
+    {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
         die(json_encode($data));
     }
 
-    public static function renderPlaintext(string $data) {
+    public static function renderPlaintext(string $data)
+    {
         header('Content-Type: text/html; charset=utf-8');
         http_response_code(500);
         die($data);
