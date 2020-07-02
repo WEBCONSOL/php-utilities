@@ -111,7 +111,7 @@ class Request
                 }
             }
         }
-        else if ($this->method() === "DELETE" || $this->method() === "PUT") {
+        else if ($this->method() === "DELETE" || $this->method() === "PUT" || $this->method() === "PATCH") {
 
             if (sizeof(self::$data['deleteData']) === 0) {
                 $requestBody = file_get_contents("php://input");
