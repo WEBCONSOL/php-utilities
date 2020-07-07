@@ -271,6 +271,9 @@ class ClientlibManager
                 $this->content = 'Error.' . "\n" . 'File: ' . $e->getFile() . "\n" . 'Message: ' . $e->getMessage();
             }
         }
+        else {
+            CustomResponse::render(404, 'ITEM_NOT_FOUND', false);
+        }
     }
 
     private function fetchFiles(string $dir, string $extRegex) {

@@ -17,7 +17,8 @@ class CustomResponse
     {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
-        die(self::getOutputFormattedAsString($data, $code, $msg));
+        self::getOutputFormattedAsString($data, $code, $msg);
+        exit(0);
     }
 
     public static function getOutputFormattedAsArray(array $data=null, int $code=200, $msg=null, bool $status=true): array
@@ -54,14 +55,16 @@ class CustomResponse
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
-        die(json_encode($data));
+        json_encode($data);
+        exit(0);
     }
 
     public static function renderPlaintext(string $data)
     {
         header('Content-Type: text/html; charset=utf-8');
         http_response_code(500);
-        die($data);
+        json_encode($data);
+        exit(0);
     }
 
     public static function debugBacktrace(): array
