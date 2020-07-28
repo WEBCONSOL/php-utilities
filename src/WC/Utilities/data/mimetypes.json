@@ -18,5 +18,6 @@
   "gif":"image/gif",
   "tif":"image/tiff",
   "tiff":"image/tiff",
-  "ttf":"font/ttf"
+  "ttf":"font/ttf",
+  "svg": "image/svg+xml"
 }

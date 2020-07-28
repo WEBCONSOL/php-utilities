@@ -67,15 +67,18 @@ class DigitalAssetRenderer
     {
         $mimeType = '';
         try {
-            $mimeType = mime_content_type($file);
-        }
-        catch (\Exception $e) {
             $extConfigFile = __DIR__.'/data/mimetypes.json';
             $ext = pathinfo($file, PATHINFO_EXTENSION);
             $exts = file_exists($extConfigFile) ? json_decode(file_get_contents($extConfigFile), true) : [];
             if (!empty($exts) && isset($exts[$ext])) {
                 $mimeType = $exts[$ext];
             }
+            else {
+                $mimeType = mime_content_type($file);
+            }
+        }
+        catch (\Exception $e) {
+            throw new \RuntimeException($e->getMessage(), 500);
         }
         return $mimeType;
     }
