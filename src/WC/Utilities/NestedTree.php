@@ -109,14 +109,26 @@ final class NestedTree
             //die(implode("\n", $queries));
             if (sizeof($queries) > 0) {
                 $this->dbo->exec(implode("\n", $queries));
+                $this->msg = 'SUCCESS';
             }
             if ($this->updateChildren) {
-                $this->storeUpdateMovedNodeChildren();
+                $exec = $this->storeUpdateMovedNodeChildren();
+                if ($exec) {
+                    $this->msg = 'SUCCESS';
+                }
+                else {
+                    $this->msg = 'FAILED';
+                }
             }
-            $this->msg = 'SUCCESS';
+            else {
+                $this->msg = 'FAILED';
+            }
 
             if (!$this->editId) {
                 $this->editId = $this->dbo->lastInsertId();
+                if ($this->editId) {
+                    $this->msg = 'SUCCESS';
+                }
             }
         }
         else {
@@ -304,13 +316,13 @@ final class NestedTree
         return [];
     }
 
-    private function storeUpdateMovedNodeChildren() {
+    private function storeUpdateMovedNodeChildren(): int {
 
         $row = $this->getNode($this->editId);
         $query = 'UPDATE ' . $this->table . ' SET '.
             'path=CONCAT("'.$row['path'].'/",alias),path_md5=MD5(CONCAT("'.$row['path'].'/",alias)),'.$this->dbo->quoteName('level').'='.($this->newNodeLevel+1).' '.
             'WHERE path LIKE "'.$this->nodePath.'/%" AND id!='.$this->dbo->quote($this->editId);
-        $this->dbo->exec($query);
+        return $this->dbo->exec($query);
     }
 
     /**
