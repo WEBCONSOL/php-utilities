@@ -145,7 +145,7 @@ final class NestedTree
         }
     }
 
-    public function branchQueryStatement(int $nodeId, int $ignoreBranch=0, int $depth=1, string $channel=''): string {
+    public function branchQueryStatement(int $nodeId, int $ignoreBranch=0, int $depth=1, string $channel=null): string {
 
         /*$query = 'SELECT node.*, (COUNT(parent.id) - 1) AS depth
                         FROM '.$this->table.' AS node,
@@ -155,6 +155,15 @@ final class NestedTree
                         GROUP BY node.name
                         ORDER BY node.lft';*/
 
+        if ($channel) {
+            $channelCondition = [];
+            $arr = explode(',', $channel);
+            foreach ($arr as $chn) {
+                $channelCondition[] = 'node.channel LIKE '.$this->dbo->quote('%"'.$chn.'"%');
+            }
+            $channel = '('.implode(' OR ', $channelCondition).')';
+        }
+
         $subQuery = 'SELECT node.*,(node.level-1) AS depth FROM '.$this->table.' AS node WHERE node.id = '.$this->dbo->quote($nodeId);
         $query = 'SELECT node.*, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth
         FROM '.$this->table.' AS node,
@@ -163,8 +172,8 @@ final class NestedTree
                 ('.$subQuery.') AS sub_tree
         WHERE node.lft BETWEEN parent.lft AND parent.rgt
             AND node.lft BETWEEN  sub_parent.lft AND sub_parent.rgt
-            AND sub_parent.id = sub_tree.id'.
-            ($channel ? ' AND node.channel LIKE ' . $this->dbo->quote('%"'.$channel.'"%') : '').
+            AND sub_parent.id = sub_tree.id '.
+            ($channel ? ' AND ' . $channel : '').
             ($ignoreBranch > 0 ? ' AND node.id != ' . $this->dbo->quote($ignoreBranch) : '').'
         GROUP BY node.id
         '.($depth?'HAVING depth <= ' . $depth : '').'
@@ -173,7 +182,7 @@ final class NestedTree
         return $query;
     }
 
-    public function treeQueryStatement(int $ignoreBranch=0, string $channel=''): string {
+    public function treeQueryStatement(int $ignoreBranch=0, string $channel=null): string {
 
         if ($ignoreBranch) {
             $children = $this->getBranch($ignoreBranch, 0, 0);
@@ -186,11 +195,20 @@ final class NestedTree
             }
         }
 
+        if ($channel) {
+            $channelCondition = [];
+            $arr = explode(',', $channel);
+            foreach ($arr as $chn) {
+                $channelCondition[] = 'node.channel LIKE '.$this->dbo->quote('%"'.$chn.'"%');
+            }
+            $channel = '('.implode(' OR ', $channelCondition).')';
+        }
+
         $query = 'SELECT node.*,(COUNT(parent.id) - 1) AS depth 
             FROM '.$this->table.' AS node,'.$this->table.' AS parent 
             WHERE (node.lft BETWEEN parent.lft AND parent.rgt) 
-            AND (node.rgt BETWEEN parent.lft AND parent.rgt)'.
-            ($channel ? ' AND node.channel LIKE '.$this->dbo->quote('%"'.$channel.'"%') : '').
+            AND (node.rgt BETWEEN parent.lft AND parent.rgt) '.
+            ($channel ? ' AND '.$channel : '').
             ($ignoreBranch ? ' AND node.id NOT IN('.$ignoreBranch.')' : '').'
             GROUP BY node.id 
             ORDER BY node.lft'.($this->limit ? ' ' . $this->limit : '');
