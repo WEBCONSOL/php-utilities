@@ -9,6 +9,12 @@ class Logger
     private function __construct(){}
 
     public static function log($message, $message_type = null, $destination = null, $extra_headers = null) {
+        if ($message === '[error] Invalid HTTP status code') {
+            $message = json_encode([
+                'message' => $message,
+                'debug_backtrace' => debug_backtrace()
+            ]);
+        }
         error_log($message, $message_type, $destination, $extra_headers);
     }
 
