@@ -152,14 +152,7 @@ final class NestedTree
                         GROUP BY node.name
                         ORDER BY node.lft';*/
 
-        if ($channel) {
-            $channelCondition = [];
-            $arr = explode(',', $channel);
-            foreach ($arr as $chn) {
-                $channelCondition[] = 'node.channel LIKE '.$this->dbo->quote('%"'.$chn.'"%');
-            }
-            $channel = '('.implode(' OR ', $channelCondition).')';
-        }
+        if ($channel) {$channel = $this->channelConditions($channel, 'node');}
 
         $subQuery = 'SELECT node.*,(node.level-1) AS depth FROM '.$this->table.' AS node WHERE node.id = '.$this->dbo->quote($nodeId);
         $query = 'SELECT node.*, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth
@@ -192,14 +185,7 @@ final class NestedTree
             }
         }
 
-        if ($channel) {
-            $channelCondition = [];
-            $arr = explode(',', $channel);
-            foreach ($arr as $chn) {
-                $channelCondition[] = 'node.channel LIKE '.$this->dbo->quote('%"'.$chn.'"%');
-            }
-            $channel = '('.implode(' OR ', $channelCondition).')';
-        }
+        if ($channel) {$channel = $this->channelConditions($channel, 'node');}
 
         $query = 'SELECT node.*,(COUNT(parent.id) - 1) AS depth 
             FROM '.$this->table.' AS node,'.$this->table.' AS parent 
@@ -218,6 +204,20 @@ final class NestedTree
     public function getMessage(): string { return $this->msg; }
 
     public function getEditId(): int {return $this->editId;}
+
+    private function channelConditions(string $channel, string $tbAlias=''): string {
+        if ($channel) {
+            $channelCondition = [];
+            $arr = explode(',', $channel);
+            foreach ($arr as $chn) {
+                $channelCondition[] = ($tbAlias?$tbAlias.'.':'').'channel LIKE '.$this->dbo->quote('%"'.$chn.'"');
+                $channelCondition[] = ($tbAlias?$tbAlias.'.':'').'channel LIKE '.$this->dbo->quote('"'.$chn.'"%');
+                $channelCondition[] = ($tbAlias?$tbAlias.'.':'').'channel LIKE '.$this->dbo->quote('%"'.$chn.'"%');
+            }
+            $channel = '('.implode(' OR ', $channelCondition).')';
+        }
+        return $channel;
+    }
 
     private function checkExistence(): bool {
         $query = 'SELECT id FROM ' . $this->table . ' WHERE path_md5="' . $this->pathMD5 . '"' . ($this->editId ? ' AND id!='.$this->editId : '');
