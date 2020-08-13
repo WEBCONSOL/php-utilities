@@ -121,9 +121,6 @@ final class NestedTree
                     $this->msg = 'FAILED';
                 }
             }
-            else {
-                $this->msg = 'FAILED';
-            }
 
             if (!$this->editId) {
                 $this->editId = $this->dbo->lastInsertId();
