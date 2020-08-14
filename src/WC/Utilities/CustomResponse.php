@@ -4,6 +4,18 @@ namespace WC\Utilities;
 
 class CustomResponse
 {
+    //Ref: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+    const HTTP_RESPONSE_CODES = [
+        100,101,102,103,
+        200,201,202,203,204,205,206,207,208,226,
+        300,301,302,303,304,305,306,307,308,
+        400,401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418,421,422,423,424,425,426,428,429,431,451,
+        500,501,502,503,504,505,506,507,508,510,511,
+        103,218,419,420,430,450,498,499,509,526,529,530,598,
+        444,494,495,496,497,499,
+        520,521,522,523,624,525,526,527,530,
+        460,463
+    ];
     private static $debug = false;
     private static $debugInfo = null;
 
@@ -15,6 +27,10 @@ class CustomResponse
 
     public static function render(int $code, $msg=null, bool $status=true, array $data=array()): string
     {
+        if (!in_array($code, CustomResponse::HTTP_RESPONSE_CODES)) {
+            $code = 500;
+        }
+
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
         self::getOutputFormattedAsString($data, $code, $msg);
