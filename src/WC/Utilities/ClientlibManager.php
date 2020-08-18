@@ -102,7 +102,7 @@ class ClientlibManager
     public function renderContent()
     {
         $this->setRenderHeaderContentType();
-        if ($this->patterns === null && $this->replaces === null) {
+        if ($this->patterns === null && $this->replaces === null && strlen($this->assetDir) > 0) {
             $this->patterns = ['../fonts'];
             $this->replaces = [$this->assetDir.'/fonts'];
         }
@@ -115,7 +115,7 @@ class ClientlibManager
 
         if ($this->isStyle)
         {
-            if ($this->pathInfo->isMinify()) {
+            if ($this->isMinify) {
                 $this->content = Minify::css(file_get_contents($this->filePath));
             } else {
                 $this->content = file_get_contents($this->filePath);
@@ -123,7 +123,7 @@ class ClientlibManager
         }
         else if ($this->isScript)
         {
-            if ($this->pathInfo->isMinify())
+            if ($this->isMinify)
             {
                 if ($isWCAG) {
                     $this->content = str_replace(array('_global.', '_global['), array('window.', 'window['), Minify::js(file_get_contents($this->filePath)));
