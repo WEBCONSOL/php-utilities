@@ -19,6 +19,7 @@ final class NestedTree
     private $orderingPosition = '';
     private $parentId = 0;
     private $editId = 0;
+    private $insertId = 0;
     private $parentLft = 0;
     private $parentRgt = 0;
     private $nodeLft = 0;
@@ -134,6 +135,10 @@ final class NestedTree
                 if ($this->editId) {
                     $this->msg = 'SUCCESS';
                 }
+                if (is_string($this->editId)) {
+                    $this->editId = (int) $this->editId;
+                }
+                $this->insertId = $this->editId;
             }
         }
         else {
@@ -204,6 +209,8 @@ final class NestedTree
     public function getMessage(): string { return $this->msg; }
 
     public function getEditId(): int {return $this->editId;}
+
+    public function getInsertId(): int {return $this->insertId;}
 
     private function channelConditions(string $channel, string $tbAlias=''): string {
         if ($channel) {
