@@ -2,6 +2,8 @@
 
 namespace WC\Utilities;
 
+use Exception;
+
 final class PregUtil
 {
     private function __construct(){}
@@ -14,7 +16,7 @@ final class PregUtil
                 return $matches;
             }
         }
-        catch (\Exception $e) {}
+        catch (Exception $e) {}
         return array();
     }
 
@@ -34,7 +36,7 @@ final class PregUtil
         $postImages = array();
 
         // Get all images
-        preg_match_all("<img (.+)>", $htmlString, $image_matches, PREG_SET_ORDER);
+        preg_match_all('<'.'img (.+)>', $htmlString, $image_matches, PREG_SET_ORDER);
 
         // Loop the images and add the raw img html tag to $postImages
         foreach ($image_matches as $image_match)

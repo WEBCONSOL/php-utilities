@@ -18,6 +18,7 @@
         "mrclay/jsmin-php": "^2.3",
         "natxet/cssmin": "^3.0",
         "lcobucci/jwt": "^3.2",
+        "league/flysystem": "^1.0",
         "mashape/unirest-php": "^3.0"
     },
     "autoload": {

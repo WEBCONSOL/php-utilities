@@ -28,9 +28,9 @@ final class NestedTree
 
     private $exists = false;
 
-    private $updateStatementList = '';
-    private $insertFieldList = '';
-    private $insertValueList = '';
+    private $updateStatementList = [];
+    private $insertFieldList = [];
+    private $insertValueList = [];
 
     private $updateChildren = false;
     private $newNodeLevel = 0;
@@ -60,8 +60,8 @@ final class NestedTree
     public function delete(int $id): bool {
         $queries = array();
         $queries[] = 'LOCK TABLES ' . $this->table . ' WRITE;';
-        $queries[] = 'SELECT @myLeft := lft, @myRight := rgt, @myWidth := rgt - lft + 1 FROM ' . $this->table . ' WHERE id = ' . $id . ';';
-        $queries[] = 'DELETE FROM ' . $this->table . ' WHERE lft BETWEEN @myLeft AND @myRight;';
+        $queries[] = 'SELECT '.'@myLeft := lft, @myRight := rgt, @myWidth := rgt - lft + 1 FROM ' . $this->table . ' WHERE id = ' . $id . ';';
+        $queries[] = 'DELETE '.'FROM ' . $this->table . ' WHERE lft BETWEEN @myLeft AND @myRight;';
         $queries[] = 'UPDATE ' . $this->table . ' SET rgt = rgt - @myWidth WHERE rgt > @myRight;';
         $queries[] = 'UPDATE ' . $this->table . ' SET lft = lft - @myWidth WHERE lft > @myRight;';
         $queries[] = 'UNLOCK TABLES;';
@@ -126,7 +126,7 @@ final class NestedTree
             if (!$this->editId) {
                 $this->editId = $this->dbo->lastInsertId();
                 if (!$this->editId) {
-                    $sql = 'SELECT id FROM '.$this->table.' WHERE path_md5='.$this->dbo->quote($this->pathMD5);
+                    $sql = 'SELECT id '.'FROM '.$this->table.' WHERE path_md5='.$this->dbo->quote($this->pathMD5);
                     $row = $this->dbo->loadAssoc($sql);
                     if (!empty($row)) {
                         $this->editId = $row['id'];
@@ -159,8 +159,8 @@ final class NestedTree
 
         if ($channel) {$channel = $this->channelConditions($channel, 'node');}
 
-        $subQuery = 'SELECT node.*,(node.level-1) AS depth FROM '.$this->table.' AS node WHERE node.id = '.$this->dbo->quote($nodeId);
-        $query = 'SELECT node.*, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth
+        $subQuery = 'SELECT node.*,(node.level-1) AS depth '.'FROM '.$this->table.' AS node WHERE node.id = '.$this->dbo->quote($nodeId);
+        $query = 'SELECT node.*, (COUNT(parent.id) - (sub_tree.depth + 1)) AS depth'.'
         FROM '.$this->table.' AS node,
                 '.$this->table.' AS parent,
                 '.$this->table.' AS sub_parent,
@@ -192,7 +192,7 @@ final class NestedTree
 
         if ($channel) {$channel = $this->channelConditions($channel, 'node');}
 
-        $query = 'SELECT node.*,(COUNT(parent.id) - 1) AS depth 
+        $query = 'SELECT node.*,(COUNT(parent.id) - 1) AS depth'.' 
             FROM '.$this->table.' AS node,'.$this->table.' AS parent 
             WHERE (node.lft BETWEEN parent.lft AND parent.rgt) 
             AND (node.rgt BETWEEN parent.lft AND parent.rgt) '.
@@ -227,7 +227,7 @@ final class NestedTree
     }
 
     private function checkExistence(): bool {
-        $query = 'SELECT id FROM ' . $this->table . ' WHERE path_md5="' . $this->pathMD5 . '"' . ($this->editId ? ' AND id!='.$this->editId : '');
+        $query = 'SELECT id '.'FROM ' . $this->table . ' WHERE path_md5="' . $this->pathMD5 . '"' . ($this->editId ? ' AND id!='.$this->editId : '');
         $row = $this->dbo->loadAssoc($query);
         $this->exists = !empty($row) && isset($row['id']);
         return $this->exists;
@@ -383,7 +383,9 @@ final class NestedTree
      */
     private function storeUpdateNodeQueryAsArray(): array {
         $queries = array();
-        $queries[] = 'UPDATE ' . $this->table . ' SET ' . implode(',', $this->updateStatementList) . ' WHERE id='.$this->editId . ';';
+        $queries[] = 'UPDATE ' . $this->table .
+            ' SET ' . (is_array($this->updateStatementList) ? implode(',', $this->updateStatementList) : $this->updateStatementList) .
+            ' WHERE id='.$this->editId . ';';
         return $queries;
     }
 
@@ -427,7 +429,9 @@ final class NestedTree
             $queries[] = 'UPDATE ' . $this->table . ' SET rgt = rgt - ' . $width . ' WHERE rgt > ' . $oldRgt . ';';
 
             // update other properties
-            $queries[] = 'UPDATE ' . $this->table . ' SET ' . implode(',', $this->updateStatementList) . ' WHERE id=' . $this->editId . ';';
+            $queries[] = 'UPDATE ' . $this->table .
+                ' SET ' . (is_array($this->updateStatementList) ? implode(',', $this->updateStatementList) : $this->updateStatementList) .
+                ' WHERE id=' . $this->editId . ';';
 
             // unlock
             $queries[] = 'UNLOCK TABLES;';
@@ -474,7 +478,9 @@ final class NestedTree
         $queries[] = 'UPDATE ' . $this->table . ' SET parent_id = @parent_id WHERE id = @node_id;';
 
         // step 5: update other properties
-        $queries[] = 'UPDATE ' . $this->table . ' SET ' . implode(',', $this->updateStatementList) . ' WHERE id='.$this->editId . ';';
+        $queries[] = 'UPDATE ' . $this->table .
+            ' SET ' . (is_array($this->updateStatementList) ? implode(',', $this->updateStatementList) : $this->updateStatementList) .
+            ' WHERE id='.$this->editId . ';';
 
         // unlock
         $queries[] = 'UNLOCK TABLES;';
@@ -494,22 +500,24 @@ final class NestedTree
         $queries[] = 'LOCK TABLES '.$this->table.' WRITE;';
 
         if ($nodeId) {
-            $queries[] = 'SELECT @myPosition := rgt FROM ' . $this->table . ' WHERE id=' . $nodeId . ';';
+            $queries[] = 'SELECT @myPosition := rgt '.'FROM ' . $this->table . ' WHERE id=' . $nodeId . ';';
             $queries[] = 'UPDATE '.$this->table.' SET lft = lft + 2 WHERE lft > @myPosition;';
             $queries[] = 'UPDATE '.$this->table.' SET rgt = rgt + 2 WHERE rgt > @myPosition;';
         }
         else if ($position === 'first') {
-            $queries[] = 'SELECT @myPosition := lft FROM '.$this->table.' WHERE id='.$this->parentId.';';
+            $queries[] = 'SELECT @myPosition := lft '.'FROM '.$this->table.' WHERE id='.$this->parentId.';';
             $queries[] = 'UPDATE '.$this->table.' SET lft = lft + 2 WHERE lft > @myPosition;';
             $queries[] = 'UPDATE '.$this->table.' SET rgt = rgt + 2 WHERE rgt > @myPosition;';
         }
         else if ($position === 'last') {
-            $queries[] = 'SELECT @myPosition := (rgt-1) FROM '.$this->table.' WHERE id='.$this->parentId.';';
+            $queries[] = 'SELECT @myPosition := (rgt-1) '.'FROM '.$this->table.' WHERE id='.$this->parentId.';';
             $queries[] = 'UPDATE '.$this->table.' SET lft = lft + 2 WHERE lft > @myPosition;';
             $queries[] = 'UPDATE '.$this->table.' SET rgt = rgt + 2 WHERE rgt > @myPosition;';
         }
 
-        $queries[] = 'INSERT INTO ' . $this->table . '(' . implode(',', $this->insertFieldList) . ') VALUES(' . implode(',', $this->insertValueList) . ');';
+        $queries[] = 'INSERT '.'INTO ' . $this->table . '(' .
+            (is_array($this->insertFieldList) ? implode(',', $this->insertFieldList) : $this->insertFieldList) .
+            ') VALUES(' . implode(',', $this->insertValueList) . ');';
 
         $queries[] = 'UNLOCK TABLES;';
 

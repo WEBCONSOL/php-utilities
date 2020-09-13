@@ -6,10 +6,10 @@ final class HostUtil
 {
     private static $EZPZ_CDN = 'https://%scdn.ezpz.solutions';
 
-    public static function isLocal(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'local');}
-    public static function isDev(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'dev');}
-    public static function isQA(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'qa');}
-    public static function isStage(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'stage');}
+    public static function isLocal(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'local-');}
+    public static function isDev(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'dev-');}
+    public static function isQA(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'qa-');}
+    public static function isStage(): bool {return StringUtil::startsWith($_SERVER['HTTP_HOST'], 'stage-');}
 
     public static function getPfx(): string {
         $parts = explode('-', $_SERVER['HTTP_HOST']);

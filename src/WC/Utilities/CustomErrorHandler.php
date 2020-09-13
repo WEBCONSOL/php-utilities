@@ -2,6 +2,8 @@
 
 namespace WC\Utilities;
 
+use Exception;
+
 class CustomErrorHandler
 {
     private static $displayed = false;
@@ -18,7 +20,8 @@ class CustomErrorHandler
     {
         if (!self::$displayed) {
             self::setDisplayed(true);
-            $message = 'Error: ' . $errStr . '; file: ' . $errFile . '; line: ' . $errLine;
+            $message = 'Error: ' . $errStr . '; file: ' . $errFile . '; line: ' . $errLine .
+                ($errContext ? (is_array($errContext)||is_object($errContext) ? json_encode($errContext) : $errContext) : '');
             Logger::error($message);
             CustomResponse::render($errCode, $message, false);
         }
@@ -28,7 +31,7 @@ class CustomErrorHandler
     {
         if (!self::$displayed) {
             self::setDisplayed(true);
-            if ($e instanceof \Error || $e instanceof \Exception) {
+            if ($e instanceof Exception) {
                 $message = 'Exception: ' . $e->getMessage() . '; file: ' . $e->getFile() . '; line: ' . $e->getLine();
                 Logger::error($message);
                 CustomResponse::render(500, $message, false);

@@ -2,6 +2,10 @@
 
 namespace WC\Utilities;
 
+use Exception;
+use WC\Utilities\Less\Compiler as LessCompiler;
+use \WC\Utilities\Sass\Compiler as SassCompiler;
+
 class ClientlibManager
 {
     private $pathInfo;
@@ -242,19 +246,19 @@ class ClientlibManager
                             }
                         }
                     }
-                    $less = new \WC\Utilities\Less\Compiler();
+                    $less = new LessCompiler();
                     $htmlBuffer[] = $less->compile(implode('', $vars).implode('', $lessBuffer));
                 }
                 if (sizeof($sassBuffer)) {
+                    $vars = array();
                     if (sizeof($this->sassVars)) {
-                        $vars = array();
                         foreach ($this->sassVars as $sassVar) {
                             if (file_exists($sassVar)) {
                                 $vars[] = file_get_contents($sassVar);
                             }
                         }
                     }
-                    $sass = new \WC\Utilities\Sass\Compiler();
+                    $sass = new SassCompiler();
                     $htmlBuffer[] = $sass->compile(implode('', $vars).implode('', $sassBuffer));
                 }
 
@@ -271,7 +275,7 @@ class ClientlibManager
                 }
                 unset($htmlBuffer, $lessBuffer, $sassBuffer);
             }
-            catch (\Exception $e) {
+            catch (Exception $e) {
                 $this->content = 'Error.' . "\n" . 'File: ' . $e->getFile() . "\n" . 'Message: ' . $e->getMessage();
             }
         }

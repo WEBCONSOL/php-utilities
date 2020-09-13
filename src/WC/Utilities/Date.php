@@ -2,7 +2,12 @@
 
 namespace WC\Utilities;
 
-class Date extends \DateTime
+use DateTime;
+use DateTimeZone;
+use Exception;
+use RuntimeException;
+
+class Date extends DateTime
 {
     const DAY_ABBR = "\x021\x03";
     const DAY_NAME = "\x022\x03";
@@ -19,12 +24,12 @@ class Date extends \DateTime
         // Create the base GMT and server time zone objects.
         if (empty(self::$gmt) || empty(self::$stz))
         {
-            self::$gmt = new \DateTimeZone('GMT');
-            self::$stz = new \DateTimeZone(@date_default_timezone_get());
+            self::$gmt = new DateTimeZone('GMT');
+            self::$stz = new DateTimeZone(@date_default_timezone_get());
         }
 
         // If the time zone object is not set, attempt to build it.
-        if (!($tz instanceof \DateTimeZone))
+        if (!($tz instanceof DateTimeZone))
         {
             if ($tz === null)
             {
@@ -32,19 +37,19 @@ class Date extends \DateTime
             }
             elseif (is_string($tz))
             {
-                $tz = new \DateTimeZone($tz);
+                $tz = new DateTimeZone($tz);
             }
         }
 
         // If the date is numeric assume a unix timestamp and convert it.
-        \date_default_timezone_set('UTC');
+        date_default_timezone_set('UTC');
         $date = is_numeric($date) ? date('c', $date) : $date;
 
         // Call the DateTime constructor.
         parent::__construct($date, $tz);
 
         // Reset the timezone for 3rd party libraries/extension that does not use JDate
-        \date_default_timezone_set(self::$stz->getName());
+        date_default_timezone_set(self::$stz->getName());
 
         // Set the timezone object for access later.
         $this->tz = $tz;
@@ -122,10 +127,15 @@ class Date extends \DateTime
 
     public static function getInstance($date = 'now', $tz = null)
     {
-        return new Date($date, $tz);
+        try {
+            return new Date($date, $tz);
+        }
+        catch (Exception $e) {
+            throw new RuntimeException($e->getMessage(), 500);
+        }
     }
 
-    public function dayToString($day, $abbr = false)
+    public function dayToString($day, $abbr = false): string
     {
         switch ($day)
         {
@@ -144,6 +154,8 @@ class Date extends \DateTime
             case 6:
                 return $abbr ? 'SAT' : 'SATURDAY';
         }
+
+        return "";
     }
 
     public function calendar($format, $local = false, $translate = true)
@@ -208,7 +220,7 @@ class Date extends \DateTime
         return (float) $hours ? ($this->tz->getOffset($this) / 3600) : $this->tz->getOffset($this);
     }
 
-    public function monthToString($month, $abbr = false)
+    public function monthToString($month, $abbr = false): string
     {
         switch ($month)
         {
@@ -237,6 +249,8 @@ class Date extends \DateTime
             case 12:
                 return $abbr ? 'DECEMBER_SHORT' : 'DECEMBER';
         }
+
+        return "";
     }
 
     public function setTimezone($tz)
@@ -248,7 +262,7 @@ class Date extends \DateTime
 
     public function toISO8601($local = false)
     {
-        return $this->format(\DateTime::RFC3339, $local, false);
+        return $this->format(DateTime::RFC3339, $local, false);
     }
 
     public function toSql($local = false)
