@@ -102,7 +102,7 @@ class ClientlibManager
     public function renderContent()
     {
         $this->setRenderHeaderContentType();
-        if ($this->patterns === null && $this->replaces === null) {
+        if ($this->patterns === null && $this->replaces === null && strlen($this->assetDir) > 0) {
             $this->patterns = ['../fonts'];
             $this->replaces = [$this->assetDir.'/fonts'];
         }
@@ -115,7 +115,7 @@ class ClientlibManager
 
         if ($this->isStyle)
         {
-            if ($this->pathInfo->isMinify()) {
+            if ($this->isMinify) {
                 $this->content = Minify::css(file_get_contents($this->filePath));
             } else {
                 $this->content = file_get_contents($this->filePath);
@@ -123,7 +123,7 @@ class ClientlibManager
         }
         else if ($this->isScript)
         {
-            if ($this->pathInfo->isMinify())
+            if ($this->isMinify)
             {
                 if ($isWCAG) {
                     $this->content = str_replace(array('_global.', '_global['), array('window.', 'window['), Minify::js(file_get_contents($this->filePath)));
@@ -194,18 +194,20 @@ class ClientlibManager
             $htmlBuffer = array();
             $lessBuffer = array();
             $sassBuffer = array();
-            $pattern = '/@import "(.[^"]*)";/';
+            $pattern = '/@import "(.[^"]*)";\n/';
             foreach ($this->files as $file) {
                 if (pathinfo($file, PATHINFO_EXTENSION) === FileExtension::SASS) {
                     $bfr = file_get_contents($file);
                     $matches = PregUtil::getMatches($pattern, $bfr);
                     if (sizeof($matches)) {
-                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
-                        if (file_exists($varFile)) {
-                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
-                        }
-                        else {
-                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        foreach ($matches as $match) {
+                            $varFile = dirname($file) . '/' . $match[1] . '.less';
+                            if (file_exists($varFile)) {
+                                $bfr = str_replace($match[0], file_get_contents($varFile), $bfr);
+                            }
+                            else {
+                                die('File: ' . $varFile .' in @import "'.$match[1].'"; does not exist.');
+                            }
                         }
                     }
                     $sassBuffer[] = $bfr;
@@ -214,12 +216,14 @@ class ClientlibManager
                     $bfr = file_get_contents($file);
                     $matches = PregUtil::getMatches($pattern, $bfr);
                     if (sizeof($matches)) {
-                        $varFile = dirname($file) . '/' . $matches[1][0] . '.less';
-                        if (file_exists($varFile)) {
-                            $bfr = str_replace('@import "'.$matches[1][0].'";', file_get_contents($varFile), $bfr);
-                        }
-                        else {
-                            die('File: ' . $matches[1][0].' in @import "'.$matches[1][0].'"; does not exist.');
+                        foreach ($matches as $match) {
+                            $varFile = dirname($file) . '/' . $match[1] . '.less';
+                            if (file_exists($varFile)) {
+                                $bfr = str_replace($match[0], file_get_contents($varFile), $bfr);
+                            }
+                            else {
+                                die('File: ' . $varFile . ' in @import "'.$match[1].'"; does not exist.');
+                            }
                         }
                     }
                     $lessBuffer[] = $bfr;

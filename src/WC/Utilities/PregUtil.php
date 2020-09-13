@@ -22,6 +22,10 @@ final class PregUtil
         if (sizeof($matches) > 1 && is_array($matches[1]) && isset($matches[1][0]) && strlen($matches[1][0])) {
             return true;
         }
+        if (sizeof($matches) > 0 && is_array($matches[0]) && sizeof($matches[0]) > 1 &&
+            isset($matches[0][0]) && isset($matches[0][1]) && strlen($matches[0][0]) && strlen($matches[0][1])) {
+            return true;
+        }
         return false;
     }
 
