@@ -33,7 +33,7 @@ class CustomResponse
 
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
-        self::getOutputFormattedAsString($data, $code, $msg, $status);
+        echo self::getOutputFormattedAsString($data, $code, $msg, $status);
         exit(0);
     }
 
@@ -71,7 +71,7 @@ class CustomResponse
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
-        json_encode($data);
+        echo json_encode($data);
         exit(0);
     }
 
@@ -79,7 +79,7 @@ class CustomResponse
     {
         header('Content-Type: text/html; charset=utf-8');
         http_response_code(500);
-        json_encode($data);
+        echo json_encode($data);
         exit(0);
     }
 
