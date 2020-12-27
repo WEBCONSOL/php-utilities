@@ -36,7 +36,7 @@ class DigitalAssetRenderer
                     try {
                         header('HTTP/2.0 200 OK');
                         header('Content-Type: '.$mimeType);
-                        header('Content-disposition: attachment; filename="'.md5($this->requestFile).'.'.pathinfo($file, PATHINFO_EXTENSION).'"');
+                        //header('Content-disposition: attachment; filename="'.md5($this->requestFile).'.'.pathinfo($file, PATHINFO_EXTENSION).'"');
                         header('Content-Length: ' . $fileSystem->getSize($this->requestFile));
                         echo $fileSystem->read($this->requestFile);
                     }
