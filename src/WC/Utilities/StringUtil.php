@@ -2,6 +2,9 @@
 
 namespace WC\Utilities;
 
+use Exception;
+use stdClass;
+
 class StringUtil
 {
     public static function startsWith($haystack, $needle): bool {return (substr($haystack, 0, strlen($needle)) === $needle);}
@@ -27,7 +30,7 @@ class StringUtil
             $numberOfUnits = floor($time / $unit);
             return $numberOfUnits.' '.$text.(($numberOfUnits>1)?'s':'');
         }
-
+        return $time;
     }
 
     public static function calPercentage($value, $ratio, $decimalplaces=2)
@@ -47,7 +50,7 @@ class StringUtil
     {
         $unit=array('b','kb','mb','gb','tb','pb');
         $base = 1024;
-        $i=floor(log($size,$base));
+        $i=(int)(floor(log($size,$base))).'';
         return @round($size/pow($base,$i),2).' '.(isset($unit[$i])?$unit[$i]:$unit[0]);
     }
 
@@ -100,7 +103,7 @@ class StringUtil
 
     public static function alphaNumericOnly($string): string{return preg_replace("/[^A-Za-z0-9 ]/", '', $string);}
 
-    public static function getJSONContent($file): \stdClass {return json_decode(file_get_contents($file));}
+    public static function getJSONContent($file): stdClass {return json_decode(file_get_contents($file));}
 
     public static function isEmail($str): bool {return filter_var($str, FILTER_VALIDATE_EMAIL) ? true : false;}
 
@@ -131,7 +134,9 @@ class StringUtil
                 return true;
             }
         }
-        catch (\Exception $e) {}
+        catch (Exception $e) {
+            Logger::error($e->getMessage());
+        }
         return false;
     }
 

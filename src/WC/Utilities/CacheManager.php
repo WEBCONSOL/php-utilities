@@ -2,7 +2,8 @@
 
 namespace WC\Utilities;
 
-use WC\Models\ListModel;
+use Exception;
+use RuntimeException;
 
 class CacheManager
 {
@@ -17,7 +18,7 @@ class CacheManager
 
     public function __construct($root, $host=null, $path=null)
     {
-        $this->ds = defined('DIRECTORY_SEPARATOR') ? DIRECTORY_SEPARATOR : '/';
+        $this->ds = defined('DIRECTORY_SEPARATOR') ? DIRECTORY_SEPARATOR : (defined('DS') ? DS : '/');
         $root = str_replace('\\', $this->ds, $root);
         $this->createDir($root);
         $pathInfo = new PathInfo();
@@ -141,7 +142,7 @@ class CacheManager
 
             if (($nested > 20) || ($parent == $path))
             {
-                throw new Exception(__METHOD__ . ': Infinite loop detected');
+                throw new RuntimeException(__METHOD__ . ': Infinite loop detected', 500);
             }
 
             try
@@ -155,11 +156,11 @@ class CacheManager
                     return false;
                 }
             }
-            catch (\Exception $exception)
+            catch (Exception $exception)
             {
                 $nested--;
 
-                throw $exception;
+                throw new RuntimeException($exception->getCode(), 500);
             }
 
             // OK, parent directory has been created
@@ -178,7 +179,7 @@ class CacheManager
         // If open_basedir is set we need to get the open_basedir that the path is in
         if ($obd != null)
         {
-            if (\defined('PHP_WINDOWS_VERSION_MAJOR'))
+            if (defined('PHP_WINDOWS_VERSION_MAJOR'))
             {
                 $obdSeparator = ";";
             }
@@ -206,7 +207,7 @@ class CacheManager
             if ($inBaseDir == false)
             {
                 // Throw a FilesystemException because the path to be created is not in open_basedir
-                throw new \Exception(__METHOD__ . ': Path not in open_basedir paths');
+                throw new RuntimeException(__METHOD__ . ': Path not in open_basedir paths', 500);
             }
         }
 
@@ -214,29 +215,30 @@ class CacheManager
         $origmask = @umask(0);
 
         // Create the path
-        if (!$ret = @mkdir($path, $mode))
+        if (!$ret = $this->create($path, $mode))
         {
             @umask($origmask);
-
-            throw new \Exception(__METHOD__ . ': Could not create directory.  Path: ' . $path);
+            throw new RuntimeException(__METHOD__ . ': Could not create directory.  Path: ' . $path, 500);
         }
 
         // Reset umask
         @umask($origmask);
+
+        return true;
     }
 
     private function clean($path)
     {
-        if (!\is_string($path))
+        if (!is_string($path))
         {
-            throw new \UnexpectedValueException('J$this->clear $path is not a string.');
+            throw new RuntimeException('J$this->clear $path is not a string.', 500);
         }
 
         $stream = explode("://", $path, 2);
         $scheme = '';
         $path = $stream[0];
 
-        if (\count($stream) >= 2)
+        if (count($stream) >= 2)
         {
             $scheme = $stream[0] . '://';
             $path = $stream[1];
@@ -244,7 +246,7 @@ class CacheManager
 
         $path = trim($path);
 
-        if (empty($path))
+        if (empty($path) && defined('JPATH_ROOT'))
         {
             $path = JPATH_ROOT;
         }
@@ -261,4 +263,6 @@ class CacheManager
 
         return $scheme . $path;
     }
+
+    private function create(string $path, $mode = 0744) {return @mkdir($path, $mode);}
 }

@@ -5,7 +5,7 @@ namespace WC\Utilities;
 class Request
 {
     protected $formName = '';
-    protected $allowedTags = '<p><span><br><br /><div><table><tr><td><th><tbody><thead><ul><ol><li><a><h1><h2><h3><h4><h5><img>';
+    protected $allowedTags = '';
     protected $opts = array();
     protected static $data = null;
     private $schema_http = "http://";
@@ -16,6 +16,10 @@ class Request
     public function __construct(array $opts=array())
     {
         $this->opts = $opts;
+        $this->allowedTags = '<p'.'><span'.'><br'.'><br /'.'><div'.'><table'.'><tr'.'>'.
+            '<td'.'><th'.'><tbody'.'><thead'.'><ul'.'><ol'.'><li'.'><a'.'>'.
+            '<h1'.'><h2'.'><h3'.'><h4'.'><h5'.'><h6'.'>'.
+            '<img'.'>';
 
         if (self::$data === null)
         {

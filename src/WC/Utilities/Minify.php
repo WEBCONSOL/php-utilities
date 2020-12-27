@@ -3,6 +3,7 @@
 namespace WC\Utilities;
 
 use JSMin\JSMin;
+use CssMin;
 
 class Minify {
 
@@ -66,7 +67,7 @@ class Minify {
         if (trim($input) === "") {
             return $input;
         }
-        return \CssMin::minify($input);
+        return CssMin::minify($input);
     }
 
     // JavaScript Minifier

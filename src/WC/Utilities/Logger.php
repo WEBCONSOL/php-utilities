@@ -21,10 +21,7 @@ class Logger
     public static function error($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_ERROR')) {
             $calledIn = self::generateCallTrace(1);
-            if (!is_string($message)) {
-                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
-                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
-            }
+            $message = self::formatMessage($message);
             self::log(($calledIn?$calledIn.' - ':'').'[error] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -32,10 +29,7 @@ class Logger
     public static function debug($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_DEBUG')) {
             $calledIn = self::generateCallTrace(1);
-            if (!is_string($message)) {
-                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
-                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
-            }
+            $message = self::formatMessage($message);
             self::log(($calledIn?$calledIn.' - ':'').'[debug] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -43,10 +37,7 @@ class Logger
     public static function info($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_INFO')) {
             $calledIn = self::generateCallTrace(1);
-            if (!is_string($message)) {
-                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
-                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
-            }
+            $message = self::formatMessage($message);
             self::log(($calledIn?$calledIn.' - ':'').'[info] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -54,10 +45,7 @@ class Logger
     public static function warning($message, $message_type = null, $destination = null, $extra_headers = null) {
         if (!defined('ERROR_REPORTING_NO_WARNING')) {
             $calledIn = self::generateCallTrace(1);
-            if (!is_string($message)) {
-                if (method_exists($message, 'getMessage')) {$message = $message->getMessage().' at '.$message->getFile().' on line '.$message->getLine();}
-                else if (is_object($message) || is_array($message)) {$message = json_encode($message);}
-            }
+            $message = self::formatMessage($message);
             self::log(($calledIn?$calledIn.' - ':'').'[warning] '.$message, $message_type, $destination, $extra_headers);
         }
     }
@@ -83,8 +71,39 @@ class Logger
 
     private static function formatTrace(array $trace) {
         $o = [];
-        if (isset($trace['file'])) {$o[] = $trace['file'].(isset($trace['line'])?'('.$trace['line'].')':'');}
-        if (isset($trace['class'])) {$o[] = $trace['class'].(isset($trace['function'])?'.'.$trace['function'].(isset($trace['args'])?'('.implode(', ', $trace['args']).')':''):'');}
+        if (isset($trace['file'])) {
+            $o[] = $trace['file'].(isset($trace['line'])?'('.$trace['line'].')':'');
+        }
+        if (isset($trace['class'])) {
+            $o[] = $trace['class'].(isset($trace['function'])
+                    ? '.'.$trace['function'].(isset($trace['args'])
+                        ?'('.implode(', ', $trace['args']).')'
+                        :'')
+                    :''
+                );
+        }
         return implode(' - ', $o);
+    }
+
+    private static function formatMessage($message): string {
+        if (!is_string($message)) {
+            if (method_exists($message, 'getMessage')) {
+                $newMessage = $message->getMessage();
+                if (method_exists($message, 'getFile')) {
+                    $newMessage = $newMessage.' at '.$message->getFile();
+                    if (method_exists($message, 'getLine')) {
+                        $newMessage = $newMessage.' on line '.$message->getLine();
+                    }
+                }
+                $message = $newMessage;
+            }
+            else if (is_object($message) || is_array($message)) {
+                $message = json_encode($message);
+            }
+            else {
+                $message = '';
+            }
+        }
+        return $message;
     }
 }

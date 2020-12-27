@@ -2,6 +2,13 @@
 
 namespace WC\Utilities;
 
+
+use Exception;
+use League\Flysystem\Adapter\Local;
+use League\Flysystem\FileNotFoundException;
+use League\Flysystem\Filesystem;
+use RuntimeException;
+
 class DigitalAssetRenderer
 {
     private $debug = false;
@@ -31,8 +38,8 @@ class DigitalAssetRenderer
             {
                 if ($this->canAccess($this->requestFile)) {
                     $mimeType = $this->getMimeType($file);
-                    $adapter = new \League\Flysystem\Adapter\Local($this->root);
-                    $fileSystem = new \League\Flysystem\Filesystem($adapter);
+                    $adapter = new Local($this->root);
+                    $fileSystem = new Filesystem($adapter);
                     try {
                         header('HTTP/2.0 200 OK');
                         header('Content-Type: '.$mimeType);
@@ -40,7 +47,7 @@ class DigitalAssetRenderer
                         header('Content-Length: ' . $fileSystem->getSize($this->requestFile));
                         echo $fileSystem->read($this->requestFile);
                     }
-                    catch (\League\Flysystem\FileNotFoundException $e) {
+                    catch (FileNotFoundException $e) {
                         Logger::error($e);
                         http_response_code(500);
                         die('Error: '.$e->getMessage());
@@ -61,11 +68,15 @@ class DigitalAssetRenderer
 
     public function setDebug(bool $b){$this->debug=$b;}
 
-    protected function canAccess(string $path): bool {return true;}
+    protected function canAccess(string $path): bool {
+        if (!$path) {
+            return false;
+        }
+        return true;
+    }
 
     protected function getMimeType($file): string
     {
-        $mimeType = '';
         try {
             $extConfigFile = __DIR__.'/data/mimetypes.json';
             $ext = pathinfo($file, PATHINFO_EXTENSION);
@@ -77,8 +88,8 @@ class DigitalAssetRenderer
                 $mimeType = mime_content_type($file);
             }
         }
-        catch (\Exception $e) {
-            throw new \RuntimeException($e->getMessage(), 500);
+        catch (Exception $e) {
+            throw new RuntimeException($e->getMessage(), 500);
         }
         return $mimeType;
     }

@@ -33,7 +33,7 @@ class CustomResponse
 
         header('Content-Type: application/json; charset=utf-8');
         http_response_code($code);
-        self::getOutputFormattedAsString($data, $code, $msg);
+        echo self::getOutputFormattedAsString($data, $code, $msg, $status);
         exit(0);
     }
 
@@ -46,7 +46,7 @@ class CustomResponse
         else {
             $output = json_decode(file_get_contents(__DIR__ . '/data/500.json'), true);
         }
-        $output['status'] = $code === 200 ? 'OK' : 'ERROR';
+        $output['status'] = $code === 200 || $status ? 'OK' : 'ERROR';
         $output['code'] = $code;
         if ($msg) {
             $output['message'] = $msg;
@@ -61,9 +61,9 @@ class CustomResponse
         return $output;
     }
 
-    public static function getOutputFormattedAsString(array $data=null, int $code=200, $msg=null): string
+    public static function getOutputFormattedAsString(array $data=null, int $code=200, $msg=null, $status=true): string
     {
-        return json_encode(self::getOutputFormattedAsArray($data, $code, $msg));
+        return json_encode(self::getOutputFormattedAsArray($data, $code, $msg, $status));
     }
 
     public static function renderJSONString(string $data)
@@ -71,7 +71,7 @@ class CustomResponse
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(500);
         //header('Content-Disposition','attachment;filename="'.uniqid('json-file-').'.json"');
-        json_encode($data);
+        echo json_encode($data);
         exit(0);
     }
 
@@ -79,7 +79,7 @@ class CustomResponse
     {
         header('Content-Type: text/html; charset=utf-8');
         http_response_code(500);
-        json_encode($data);
+        echo json_encode($data);
         exit(0);
     }
 
