@@ -108,7 +108,9 @@ class Request
 
                     $arrKeys = array_keys(self::$data['postData']);
 
-                    if (isset($arrKeys[0]) && strpos($arrKeys[0], '------') !== false && strpos($arrKeys[0], 'Content-Disposition:_form-data;_name') !== false) {
+                    if (isset($arrKeys[0]) && strpos($arrKeys[0], '------') !== false &&
+                        (strpos($arrKeys[0], 'Content-Disposition:_form-data;_name') !== false ||
+                            strpos($arrKeys[0], 'Content-Disposition:_attachment;_name') !== false)) {
                         self::$data['postData'] = array();
                         $this->parseRawHttpRequest(self::$data['postData']);
                     }
