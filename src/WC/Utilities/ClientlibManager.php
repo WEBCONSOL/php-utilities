@@ -78,7 +78,7 @@ class ClientlibManager
     public function setPatterns($p) {$this->patterns=$p;}
     public function setReplaces($r) {$this->replaces=$r;}
 
-    public function getContent(): string {return $this->content;}
+    public function getContent(): string {return trim($this->content);}
 
     public function isMinify(): bool {return $this->pathInfo->isMinify();}
     public function isStyle(): bool {return $this->isStyle;}
@@ -195,6 +195,7 @@ class ClientlibManager
 
         if (!empty($this->files))
         {
+            $hbs = [];
             $htmlBuffer = array();
             $lessBuffer = array();
             $sassBuffer = array();
@@ -232,6 +233,9 @@ class ClientlibManager
                     }
                     $lessBuffer[] = $bfr;
                 }
+                else if (pathinfo($file, PATHINFO_EXTENSION) === 'hbs') {
+                    $hbs[] = $file;
+                }
                 else {
                     $htmlBuffer[] = file_get_contents($file);
                 }
@@ -262,6 +266,12 @@ class ClientlibManager
                     $htmlBuffer[] = $sass->compile(implode('', $vars).implode('', $sassBuffer));
                 }
 
+                if (!empty($hbs)) {
+                    $this->renderHBSTemplatesFromList(
+                        $hbs, 'Ezpz.hbs.set("%s",Ezpz.utils.base64Decode("%s"));', $htmlBuffer
+                    );
+                }
+
                 if ($this->isMinify) {
                     if ($this->isStyle) {
                         $this->content = Minify::css(implode('', $htmlBuffer));
@@ -273,6 +283,7 @@ class ClientlibManager
                 else {
                     $this->content = implode('', $htmlBuffer);
                 }
+                
                 unset($htmlBuffer, $lessBuffer, $sassBuffer);
             }
             catch (Exception $e) {
@@ -280,7 +291,7 @@ class ClientlibManager
             }
         }
         else {
-            CustomResponse::render(404, 'ITEM_NOT_FOUND', false);
+            new Error(ClientlibManager::class.' could not find: '.$this->pathInfo->getPath(), 404);
         }
     }
 
@@ -294,6 +305,15 @@ class ClientlibManager
                 else if (preg_match($extRegex, $path)) {
                     $this->files[] = $path;
                 }
+            }
+        }
+    }
+
+    private function renderHBSTemplatesFromList(array $list, string $format, array &$buffer) {
+        if (!empty($list)) {
+            foreach ($list as $item) {
+                $name = pathinfo($item, PATHINFO_FILENAME);
+                $buffer[] = sprintf($format, ($parent?$parent.'-':'').$name, base64_encode(file_get_contents($item)));
             }
         }
     }
