@@ -2,9 +2,7 @@
 
 namespace WC\Utilities\Mailer;
 
-use HandlebarsHelpers\Hbs;
-use WC\Models\ListModel;
-use WC\Utilities\CustomResponse;
+use Handlebars\Engine\Hbs;
 
 final class Mail
 {
@@ -50,12 +48,10 @@ final class Mail
         if (((isset($to[0]) && isset($to[0][self::KEY_TO_EMAIL])) || isset($to[self::KEY_TO_EMAIL])) && isset($from[self::KEY_TO_EMAIL]) && $subject && $emailMessage)
         {
             if ($this->templatingEngine === 'gx2cms') {
-                $ezpzTmpl = new GX2CMS\TemplateEngine\GX2CMS();
-                $emailMessage = $ezpzTmpl->compile(new GX2CMS\TemplateEngine\Model\Context($this->data), new GX2CMS\TemplateEngine\Model\Tmpl($message));
+                Hbs::setExt($this->templatingEngine);
+                Hbs::setProcessor(strtoupper($this->templatingEngine));
             }
-            else if ($this->templatingEngine === 'handlebars') {
-                $emailMessage = Hbs::render($message, $this->data);
-            }
+            $emailMessage = Hbs::render($emailMessage, $this->data);
 
             $this->envelop->from($from[self::KEY_FROM_ADDRESS], isset($from[self::KEY_FROM_NAME])?$from[self::KEY_FROM_NAME]:'', true);
             if (isset($to[0]) && isset($to[0][self::KEY_TO_EMAIL])) {
