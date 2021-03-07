@@ -268,7 +268,7 @@ class ClientlibManager
 
                 if (!empty($hbs)) {
                     $this->renderHBSTemplatesFromList(
-                        $hbs, 'Ezpz.hbs.set("%s",Ezpz.utils.base64Decode("%s"));', $htmlBuffer
+                        $hbs, '(EzpzStoreFront||Ezpz).hbs.set("%s",(EzpzStoreFront||Ezpz).utils.base64Decode("%s"));', $htmlBuffer
                     );
                 }
 
